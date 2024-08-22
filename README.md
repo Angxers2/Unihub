@@ -53,7 +53,6 @@ Below is a list of games where the script has been tested and optimized:
 - For the best experience, use Universal Hub with the games listed as "Done."
 - Discord will be open soon to suggestions
 - This script will always be free and have no ads
-- Misc tab is not done yet
 - Still needs alot of development
 - Angxers (me) is the only developer so it takes long for scripting
   
