@@ -14,6 +14,10 @@ Universal Hub is compatible with every game on Roblox, but please note that some
 - Added Support For MM2
 - Misc Tab Updates
 
+## Bugs
+**Jumpower** 
+- Give back callback error
+
 
 Below is a list of games where the script has been tested and optimized:
 
