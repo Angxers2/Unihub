@@ -2,10 +2,6 @@
 
 **Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of August 22, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
 
-## Supported Games
-
-Universal Hub is compatible with every game on Roblox, but please note that some games may detect and restrict features like walk speed, jump power, and fly, especially those located in the Main tab.
-
 ## Updates
 **V1.0** 1st Public Release 
 
@@ -18,7 +14,7 @@ Universal Hub is compatible with every game on Roblox, but please note that some
 **Jumpower** 
 - Give back callback error
 
-
+## Supported Games
 Below is a list of games where the script has been tested and optimized:
 
 | Game ID      | Game Name                           | Status  |
