@@ -55,6 +55,7 @@ Below is a list of games where the script has been tested and optimized:
 - This script will always be free and have no ads
 - Still needs alot of development
 - Angxers (me) is the only developer so it takes long for scripting
+- Misc tab has just been started to work on so sorry for the lack of features
   
 
 ## Script 
