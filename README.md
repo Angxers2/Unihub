@@ -62,6 +62,6 @@ Below is a list of games where the script has been tested and optimized:
 ## Script 
 
 - Paste this into your executor
-> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Universal%20Hub%20V1.0.txt",true))()
+> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.1.lua",true))()
 
 
