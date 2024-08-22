@@ -8,6 +8,7 @@ Universal Hub is compatible with every game on Roblox, but please note that some
 
 ## Updates
 **V1.0** 1st Public Release 
+
 **V1.1** - Bug Improvements
 - Added Support For MM2
 - Misc Tab Updates
