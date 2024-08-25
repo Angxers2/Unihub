@@ -10,10 +10,16 @@
 - Bug Improvements
 - Added Support For MM2
 - Misc Tab Updates
+- Switched To Lua Uploads Instead Of TXT Files
+
+**V1.2**
+- Fixed Jump Power
+- Minor Script Tab Changes
+- Bug Fixes
 
 ## Bugs
-**Jumpower** 
-- Give back callback error
+- None Known As Of August 25 2024
+
 
 ## Supported Games
 Below is a list of games where the script has been tested and optimized:
@@ -62,6 +68,6 @@ Below is a list of games where the script has been tested and optimized:
 ## Script 
 
 - Paste this into your executor
-> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.1.lua",true))()
+> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.2.lua",true))()
 
 
