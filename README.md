@@ -17,6 +17,7 @@
 - Minor Script Tab Changes
 - Bug Fixes
 - Jump Power Is Now Undetected
+- Added More Chat Bypasses (Scripts Tab)
 
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script) 
