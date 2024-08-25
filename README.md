@@ -16,9 +16,10 @@
 - Fixed Jump Power
 - Minor Script Tab Changes
 - Bug Fixes
+- Jump Power Is Now Undetected
 
 ## Bugs
-- None Known As Of August 25 2024
+- Jump Power Does Not Work On Respawn (Re-Execute Script) 
 
 
 ## Supported Games
