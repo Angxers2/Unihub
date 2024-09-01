@@ -19,6 +19,13 @@
 - Jump Power Is Now Undetected
 - Added More Chat Bypasses (Scripts Tab)
 
+**V1.3**
+- Added New Target Tab
+- Added Loading Time Notification
+- Bug Fixes
+- BETA Release Expect Bugs
+- New Stuff In Misc Tab
+
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script) 
 
