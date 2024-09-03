@@ -26,8 +26,13 @@
 - BETA Release Expect Bugs
 - New Stuff In Misc Tab
 
+**V1.4**
+- Added New Stats Tab
+- Bug Fixes
+
+
 ## Bugs
-- Jump Power Does Not Work On Respawn (Re-Execute Script) 
+- Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab) 
 
 
 ## Supported Games
@@ -77,6 +82,5 @@ Below is a list of games where the script has been tested and optimized:
 ## Script 
 
 - Paste this into your executor
-> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.3.lua",true))()
-
+> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.4.lua",true))()
 
