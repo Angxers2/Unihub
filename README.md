@@ -1,6 +1,6 @@
 # Universal Hub
 
-**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of August 22, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
+**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of September 21, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
 
 ## Updates
 **V1.0** 
@@ -29,6 +29,15 @@
 **V1.4**
 - Added New Stats Tab
 - Bug Fixes
+
+**V1.5**
+- Massive Misc Tab Improvements
+- Added Stuff To Target Tab
+- Added FOV Changer To Main Tab
+- Minor Change To Credit Tab
+- Bug Fixes
+- Notifications Changed
+  
 
 
 ## Bugs
@@ -82,5 +91,5 @@ Below is a list of games where the script has been tested and optimized:
 ## Script 
 
 - Paste this into your executor
-> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.4.lua",true))()
+> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.5.lua",true))()
 
