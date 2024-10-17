@@ -48,6 +48,7 @@
 - New ESP Tab
 - Optimizations
 - New Startup Blur Effect
+- Added Target Tab Improvements (Oct 17)
   
 
 
