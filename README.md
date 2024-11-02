@@ -62,7 +62,7 @@ Small Update
 - Bug Fixes
 - (Nov 2) Fixed Usercreation Buttons and fixed malfunctioning scripts in scripts section
 - Added key notification for Usercreation
-  
+- Fixed Sever Hop
 
 
 ## Bugs
