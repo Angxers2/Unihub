@@ -1,3 +1,6 @@
+![image](https://github.com/user-attachments/assets/d06fbf72-e0c0-4131-8a28-3851b6b38b8e)
+
+
 # Universal Hub
 
 **Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of November 1, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
@@ -101,17 +104,13 @@ Below is a list of games where the script has been tested and optimized:
 | 2046441765   | Ninja Legends 🥷                   | Pending |
 | 6884319169   | Mic Up 🎙                           | Done    |
 
-## Notes
+## Discord
 
-- Universal Hub is compatible with most games on Roblox, though certain games may have restrictions on features like walk speed, jump power, and fly.
-- The script is continuously updated to improve compatibility and performance.
-- For the best experience, use Universal Hub with the games listed as "Done."
-- Discord will be open soon to suggestions
-- This script will always be free and have no ads
-- Still needs alot of development
-- Angxers (me) is the only developer so it takes long for scripting
+Join the discord for updates bugs and suggestions https://discord.gg/ZNfKFyuUEd 
 
-  
+## Executors
+- Most Executors are supported (solara, jjsploit, wave, appleware and more)
+
 
 ## Script 
 
