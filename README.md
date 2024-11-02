@@ -107,6 +107,7 @@ Below is a list of games where the script has been tested and optimized:
 ## Discord
 
 Join the discord for updates bugs and suggestions 
+
 ![image](https://github.com/user-attachments/assets/446295d7-2bd9-4077-8252-1b0b037aeb6d)
 
 https://discord.gg/ZNfKFyuUEd 
