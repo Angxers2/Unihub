@@ -1,9 +1,9 @@
-![image](https://github.com/user-attachments/assets/d06fbf72-e0c0-4131-8a28-3851b6b38b8e)
+
 
 
 # Universal Hub
 
-**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of November 1, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
+**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of November 17, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
 
 ## Updates
 **V1.0** 
@@ -67,6 +67,17 @@ Small Update
 - Added key notification for Usercreation
 - Fixed Sever Hop
 
+**V2.0** Mass Update
+- Target Tab New Bang Feature and Others Section
+- Stats Tab Has Been Moved To Info Tab (Credits Tab)
+- New Misc Tab Features
+- Welcome Tab Automatic Game Detection
+- Dynamic Tab Only Loads If Your Game Is Fully Completed
+- Scripts Tab Fix
+- New Startup Chime And Lowered Blur Value
+- New Optimization Options
+- Fixed FPS Boost To Be Way Better
+- Bug Fixes
 
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab) 
@@ -108,7 +119,8 @@ Below is a list of games where the script has been tested and optimized:
 
 Join the discord for updates bugs and suggestions 
 
-![image](https://github.com/user-attachments/assets/446295d7-2bd9-4077-8252-1b0b037aeb6d)
+![image](https://github.com/user-attachments/assets/87cb3319-ab00-41a3-b00a-7cae0cb1903b)
+
 
 https://discord.gg/ZNfKFyuUEd 
 
@@ -119,5 +131,5 @@ https://discord.gg/ZNfKFyuUEd
 ## Script 
 
 - Paste this into your executor
-> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V1.9.lua",true))()
+> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()
 
