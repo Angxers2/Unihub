@@ -80,7 +80,10 @@ Small Update
 - Bug Fixes
 
 ## Bugs
-- Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab) 
+- Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
+
+## Legacy Versions
+If you want to use older versions of universal hub refer to https://github.com/Angxers2/Unihub-Legacy-Versions
 
 
 ## Supported Games
