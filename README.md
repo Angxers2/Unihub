@@ -83,7 +83,7 @@ Small Update
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
 
 ## Legacy Versions
-If you want to use older versions of universal hub refer to https://github.com/Angxers2/Unihub-Legacy-Versions
+If you want to use older versions of universal hub refer to https://github.com/Angxers2/Unihub-Legacy-Versions if windows is not working please use this version instead loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub-Legacy-Versions/refs/heads/main/Unihub%20V1.9.lua",true))()
 
 
 ## Supported Games
