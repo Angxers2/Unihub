@@ -80,7 +80,7 @@ Small Update
 - Bug Fixes
 
 **V2.0** **2** Minor Update
-- Changed theme to font
+- Changed theme to blue
 - Fixed error for windows users
 - Optimizations
 
