@@ -3,7 +3,7 @@
 
 # Universal Hub
 
-**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of November 17, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
+**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of December 1, 2024, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
 
 ## Updates
 **V1.0** 
@@ -79,11 +79,16 @@ Small Update
 - Fixed FPS Boost To Be Way Better
 - Bug Fixes
 
+**V2.0** **2** Minor Update
+- Changed theme to font
+- Fixed error for windows users
+- Optimizations
+
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
 
 ## Legacy Versions
-If you want to use older versions of universal hub refer to https://github.com/Angxers2/Unihub-Legacy-Versions if windows is not working please use this version instead loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub-Legacy-Versions/refs/heads/main/Unihub%20V1.9.lua",true))()
+If you want to use older versions of universal hub refer to https://github.com/Angxers2/Unihub-Legacy-Versions if anything is not working please use this version instead loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub-Legacy-Versions/refs/heads/main/Unihub%20V1.9.lua",true))()
 
 
 ## Supported Games
