@@ -86,6 +86,12 @@ Small Update
 - Fixed error for windows users
 - Optimizations
 
+**V2.0** **3** 
+- Mic Up Has Been Updated (New Anti Vc Ban Bypass)
+- Overall Improvements
+- New Startup Audios
+- Destroy Blur Option In Misc Tab
+
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
 
