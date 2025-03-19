@@ -4,7 +4,7 @@ https://angxers2.github.io/Unihub/
 
 ## Script 
  **Paste this into your executor**
-```loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()```
+````loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()````
 
 # Universal Hub
 
