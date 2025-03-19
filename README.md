@@ -2,6 +2,9 @@
 Please refer to our website for a more better experience if you come across issues please refer to the github 
 https://angxers2.github.io/Unihub/
 
+## Script 
+ **Paste this into your executor**
+```loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()```
 
 # Universal Hub
 
@@ -144,8 +147,5 @@ https://discord.gg/ZNfKFyuUEd
 - Most Executors are supported (solara, jjsploit, wave, appleware and more)
 
 
-## Script 
 
-- Paste this into your executor
-> loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()
 
