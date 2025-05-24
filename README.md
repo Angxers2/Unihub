@@ -97,6 +97,13 @@ Small Update
 - New Startup Audios
 - Destroy Blur Option In Misc Tab
 
+**V2.0** **4** 
+- Massive ESP Tab Update
+- New Script's
+- Optimizations
+- Switched To Global Var's Instead Of Local (Space For More Things)
+
+
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
 
