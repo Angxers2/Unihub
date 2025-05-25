@@ -4,7 +4,7 @@
 # Universal Hub Lite
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.0.lua",true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.1.lua",true))()
 ```
 
 **Universal Hub Lite** is a lightweight and performance-optimized version of the original **Universal Hub**, part of the Universal Hub Family. This version replaces the traditional GUI with a **chat-based interface**, making it perfect for players with lower-end PCs or anyone who prefers a more minimal, fast, and compact utility experience in Roblox.
