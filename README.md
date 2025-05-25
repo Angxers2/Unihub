@@ -104,6 +104,9 @@ Small Update
 - Switched To Global Var's Instead Of Local (Space For More Things)
 - Open Sourced Code !
 
+**V2.0** **4.1** 
+- More Neat Looking
+- Switched To Lucide Icons Instead Of Emojis
 
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
