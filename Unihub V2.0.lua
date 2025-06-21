@@ -4771,7 +4771,7 @@ local currentGameName = games[currentGameId]
 
 
 -- Create a tab only for the current game
-if currentGameName and (currentGameName:find("Fully Complete") or currentGameName:find("Mic Up 🎙") or currentGameName:find("Prison Life 🏢") or currentGameName:find("MM2 🔪") or currentGameName:find("Da Hood 🔫") or currentGameName:find("Volleyball 4.2 🏐")) then
+if currentGameName and (currentGameName:find("Fully Complete") or currentGameName:find("Mic Up 🎙") or currentGameName:find("Prison Life 🏢") or currentGameName:find("MM2 🔪") or currentGameName:find("Da Hood 🔫") or currentGameName:find("Volleyball 4.2 🏐") or currentGameName:find("Natural Disaster Survival 🌪️")) then
     local tab = Window:CreateTab(currentGameName)
     -- Add further logic for what to do in this tab here
 
@@ -5100,6 +5100,32 @@ teleportPlayer(teleportPosition)
 				end
 			})
 		end
+
+	elseif currentGameId == 189707 then
+
+		tab:CreateSection("Scripts")
+
+		tab:CreateButton({
+			Name = "Exeucte FE Tornado Script",
+			Callback = function()
+				loadstring(game:HttpGet("https://pastebin.com/raw/JR7RBh2a"))()
+			end
+		})
+
+		tab:CreateButton({
+			Name = "Exeucte FE Gravity Inversion",
+			Callback = function()
+				loadstring(game:HttpGet("https://pastebin.com/raw/4jiEU7Gx"))()
+			end
+		})
+
+		tab:CreateButton({
+			Name = "Execute Infinite Yield",
+			Callback = function()
+				loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+			end
+		})
+
 
 	elseif currentGameName == "Da Hood 🔫" then
 		   
