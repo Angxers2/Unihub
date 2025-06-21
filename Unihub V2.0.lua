@@ -300,7 +300,7 @@ local LabelCurrentGame = WelcomeTab:CreateLabel("Current Game: N/A")
 local function checkGame()
     local currentGameId = game.PlaceId
     if games[currentGameId] then
-        if currentGameId == 155615604 or currentGameId == 3840352284 or currentGameId == 142823291 or currentGameId == 2788229376 or currentGameId == 6884319169 then
+        if currentGameId == 155615604 or currentGameId == 3840352284 or currentGameId == 142823291 or currentGameId == 2788229376 or currentGameId == 6884319169 or currentGameId == 189707 then
             LabelCurrentGame:Set("Current Game: " .. currentGameName .. " 🟢")
         else
             LabelCurrentGame:Set("Current Game: " .. currentGameName .. " 🟠")
