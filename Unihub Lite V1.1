@@ -578,6 +578,8 @@ local Notifications = createNotificationSystem()
 
 Notifications:Info("Universal Hub Lite V1.1 Loaded !", "Goto Our Website For Updates And Other Cool Scripts ! (Copied)", 6)
 setclipboard("https://angxers2.github.io/Unihub/")
+Notifications:Info("Command Bar", "Press T For Command Bar Toggle", 4.5)
+
 
 
 
@@ -601,6 +603,8 @@ local clickTpConnection = nil
 local flyConnection = nil
 local noClipConnection = nil
 local isFlying = false
+_G.CmdBarKeybind = Enum.KeyCode.T
+
 
 
 
@@ -907,17 +911,13 @@ end
 
 local prefix = "!"
 
-
--- Main command processing function
-LocalPlayer.Chatted:Connect(function(msg)
-    
-
+-- Reusable command processing function
+local function processCommand(msg)
     -- Split by space
     local args = string.split(msg, " ")
-    
     -- Check if the first argument has a command prefix
     if #args > 0 and string.sub(args[1], 1, 1) == prefix then
-        -- Remove the "!" prefix from the command
+        -- Remove the prefix from the command
         local command = string.sub(args[1], 2):lower()
         -- Process commands
         if command == "fly" then
@@ -1533,6 +1533,19 @@ elseif command == "ShowStats" or command == "Stats" or command == "stats" or com
     task.wait(4.5)
     loadstring(game:HttpGet("https://pastebin.com/raw/aA4M7H3K",true))()
 
+elseif command == "CmdBarKeybind" or command == "barkeybind" or command == "cmdbarkeybind" or command == "cmdbarbind" or command == "barbind" then
+    local keybind = args[2]
+    local keycode = Enum.KeyCode[keybind:upper()] -- Make it case-insensitive
+
+    if keycode then
+        _G.CmdBarKeybind = keycode
+        Notifications:Success("Universal Hub Lite", "Command Bar Keybind set to " .. keycode.Name, 4.5)
+    else
+        Notifications:Error("Universal Hub Lite", "Invalid keybind: " .. tostring(keybind), 4.5)
+    end
+
+
+
 elseif command == "Cmds" or command == "cmds" or command == "Commands" or command == "commands" then 
     Notifications:Success("Universal Hub Lite", "Executing Command List, Wait A Sec ...", 4.5)
     task.wait(4.5)
@@ -2025,7 +2038,7 @@ else
     print("Unknown command:", command)
 end
 end
-end)
+end
 
 print([[
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -2068,3 +2081,417 @@ print([[
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 ]])
+
+-- Get required services
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+local TweenService = game:GetService("TweenService")
+
+-- This should match your existing prefix variable from your main script
+local prefix = "!" -- Default prefix, this should be the same variable as your main script
+
+-- Command Bar GUI (toggle with T key)
+local commandBarGui = Instance.new("ScreenGui")
+commandBarGui.Name = "UHubCommandBar"
+commandBarGui.ResetOnSpawn = false
+commandBarGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+commandBarGui.Parent = playerGui
+
+local commandBarFrame = Instance.new("Frame")
+commandBarFrame.Name = "CommandBarFrame"
+commandBarFrame.Size = UDim2.new(0.4, 0, 0, 40)
+commandBarFrame.Position = UDim2.new(0.3, 0, 0.05, 0)
+commandBarFrame.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
+commandBarFrame.BackgroundTransparency = 1 -- Start hidden
+commandBarFrame.BorderSizePixel = 0
+commandBarFrame.Visible = false
+commandBarFrame.Parent = commandBarGui
+
+local barCorner = Instance.new("UICorner")
+barCorner.CornerRadius = UDim.new(0, 10)
+barCorner.Parent = commandBarFrame
+
+local barStroke = Instance.new("UIStroke")
+barStroke.Color = Color3.fromRGB(59, 130, 246)
+barStroke.Thickness = 1.5
+barStroke.Transparency = 1 -- Start hidden
+barStroke.Parent = commandBarFrame
+
+local commandTextBox = Instance.new("TextBox")
+commandTextBox.Name = "CommandTextBox"
+commandTextBox.Size = UDim2.new(1, -20, 1, -10)
+commandTextBox.Position = UDim2.new(0, 10, 0, 5)
+commandTextBox.BackgroundTransparency = 1
+commandTextBox.Text = ""
+commandTextBox.PlaceholderText = "Type a command... (Enter to autocomplete, Enter again to execute)"
+commandTextBox.Font = Enum.Font.GothamSemibold
+commandTextBox.TextSize = 18
+commandTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+commandTextBox.PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
+commandTextBox.TextXAlignment = Enum.TextXAlignment.Left
+commandTextBox.ClearTextOnFocus = false
+commandTextBox.TextTransparency = 1 -- Start hidden
+commandTextBox.Parent = commandBarFrame
+
+-- Autocomplete dropdown container
+local autocompleteFrame = Instance.new("Frame")
+autocompleteFrame.Name = "AutocompleteFrame"
+autocompleteFrame.Size = UDim2.new(1, 0, 0, 0) -- Start with 0 height
+autocompleteFrame.Position = UDim2.new(0, 0, 1, 2)
+autocompleteFrame.BackgroundColor3 = Color3.fromRGB(25, 35, 50)
+autocompleteFrame.BackgroundTransparency = 0.05
+autocompleteFrameBorderSizePixel = 0
+autocompleteFrame.Visible = false
+autocompleteFrame.Parent = commandBarFrame
+
+local autocompleteCorner = Instance.new("UICorner")
+autocompleteCorner.CornerRadius = UDim.new(0, 8)
+autocompleteCorner.Parent = autocompleteFrame
+
+local autocompleteStroke = Instance.new("UIStroke")
+autocompleteStroke.Color = Color3.fromRGB(59, 130, 246)
+autocompleteStroke.Thickness = 1
+autocompleteStroke.Transparency = 0.7
+autocompleteStroke.Parent = autocompleteFrame
+
+-- Scrolling frame for suggestions
+local suggestionScrollFrame = Instance.new("ScrollingFrame")
+suggestionScrollFrame.Name = "SuggestionScrollFrame"
+suggestionScrollFrame.Size = UDim2.new(1, -10, 1, -10)
+suggestionScrollFrame.Position = UDim2.new(0, 5, 0, 5)
+suggestionScrollFrame.BackgroundTransparency = 1
+suggestionScrollFrame.BorderSizePixel = 0
+suggestionScrollFrame.ScrollBarThickness = 4
+suggestionScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(59, 130, 246)
+suggestionScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+suggestionScrollFrame.Parent = autocompleteFrame
+
+local suggestionLayout = Instance.new("UIListLayout")
+suggestionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+suggestionLayout.Padding = UDim.new(0, 2)
+suggestionLayout.Parent = suggestionScrollFrame
+
+-- List of all commands and aliases for autocomplete
+local commandList = {
+    "fly", "unfly", "fov", "rj", "rejoin", "uhub", "noclip", "clip", "walkspeed", "ws", "jump", "view", "unview", "infjump", "goto", "tp", "to", "bypassvc", "bvc", "rvc", "infyield", "ify", "savepos", "topos", "clicktp", "spin", "unspin", "bang", "unbang", "settime", "tod", "exbp", "extendbaseplate", "prefix", "pfx", "fpsboost", "uesp", "emotes", "sbroken", "shop", "serverhop", "antiafk", "antidle", "copyuser", "copydisplay", "copyuserid", "copyid", "orbit", "unorbit", "showimg", "headless", "unheadless", "noheadless", "copyinv", "copyweblink", "copywebsitelink", "showstats", "stats", "cmds", "commands"
+}
+
+-- Autocomplete logic
+local autocompleteMatches = {}
+local selectedIndex = 1
+local suggestionButtons = {}
+
+-- Track command bar visibility
+local barVisible = false
+
+-- Tween info for fade animations
+local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+local function clearSuggestions()
+    for _, button in pairs(suggestionButtons) do
+        button:Destroy()
+    end
+    suggestionButtons = {}
+    autocompleteFrame.Visible = false
+end
+
+local function createSuggestionButton(command, index)
+    local button = Instance.new("TextButton")
+    button.Name = "SuggestionButton" .. index
+    button.Size = UDim2.new(1, 0, 0, 30)
+    button.BackgroundColor3 = Color3.fromRGB(35, 45, 65)
+    button.BackgroundTransparency = 1
+    button.BorderSizePixel = 0
+    button.Text = command
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 16
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextXAlignment = Enum.TextXAlignment.Left
+    button.LayoutOrder = index
+    
+    -- FIXED: Use PaddingLeft instead of Left
+    local buttonPadding = Instance.new("UIPadding")
+    buttonPadding.PaddingLeft = UDim.new(0, 15)
+    buttonPadding.PaddingTop = UDim.new(0, 5)
+    buttonPadding.PaddingBottom = UDim.new(0, 5)
+    buttonPadding.Parent = button
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.Parent = button
+    
+    -- Hover effects
+    button.MouseEnter:Connect(function()
+        selectedIndex = index
+        updateSelectedSuggestion()
+        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 0.7}):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        if selectedIndex ~= index then
+            TweenService:Create(button, TweenInfo.new(0.1), {BackgroundTransparency = 1}):Play()
+        end
+    end)
+    
+    -- Click to select
+    button.MouseButton1Click:Connect(function()
+        selectSuggestion(command)
+    end)
+    
+    button.Parent = suggestionScrollFrame
+    return button
+end
+
+local function updateSelectedSuggestion()
+    for i, button in pairs(suggestionButtons) do
+        if i == selectedIndex then
+            TweenService:Create(button, TweenInfo.new(0.1), {
+                BackgroundTransparency = 0.7,
+                TextColor3 = Color3.fromRGB(59, 130, 246)
+            }):Play()
+        else
+            TweenService:Create(button, TweenInfo.new(0.1), {
+                BackgroundTransparency = 1,
+                TextColor3 = Color3.fromRGB(255, 255, 255)
+            }):Play()
+        end
+    end
+end
+
+function selectSuggestion(command)
+    local text = commandTextBox.Text
+    local args = text:match("^%S*(.*)") or ""
+    commandTextBox.Text = command .. args
+    commandTextBox.CursorPosition = #command + 1
+    clearSuggestions()
+end
+
+local function updateAutocomplete()
+    local text = commandTextBox.Text
+    print("Updating autocomplete for text: '" .. text .. "'") -- Debug print
+    
+    -- Extract just the first word (command)
+    local commandWord = text:match("^(%S*)") or ""
+    print("Command word extracted: '" .. commandWord .. "'") -- Debug print
+    
+    if commandWord == "" or #commandWord < 1 then
+        print("Command word is empty, clearing suggestions") -- Debug print
+        clearSuggestions()
+        autocompleteMatches = {}
+        selectedIndex = 1
+        return
+    end
+    
+    -- Find all matches (case insensitive)
+    local matches = {}
+    local lowerCommandWord = commandWord:lower()
+    print("Looking for matches with: '" .. lowerCommandWord .. "'") -- Debug print
+    
+    for _, cmd in ipairs(commandList) do
+        local cmdLower = cmd:lower()
+        if cmdLower:sub(1, #lowerCommandWord) == lowerCommandWord then
+            table.insert(matches, cmd)
+            print("Found match: " .. cmd) -- Debug print
+        end
+    end
+    
+    autocompleteMatches = matches
+    selectedIndex = 1
+    
+    print("Total matches found: " .. #matches) -- Debug print
+    
+    if #matches > 0 then
+        clearSuggestions()
+        
+        -- Limit to max 6 suggestions for better UX
+        local maxSuggestions = math.min(#matches, 6)
+        print("Creating " .. maxSuggestions .. " suggestion buttons") -- Debug print
+        
+        for i = 1, maxSuggestions do
+            local button = createSuggestionButton(matches[i], i)
+            table.insert(suggestionButtons, button)
+        end
+        
+        -- Update dropdown size
+        local dropdownHeight = maxSuggestions * 32
+        autocompleteFrame.Size = UDim2.new(1, 0, 0, dropdownHeight)
+        suggestionScrollFrame.CanvasSize = UDim2.new(0, 0, 0, maxSuggestions * 32)
+        
+        autocompleteFrame.Visible = true
+        updateSelectedSuggestion()
+        
+        -- Fade in effect
+        autocompleteFrame.BackgroundTransparency = 1
+        TweenService:Create(autocompleteFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.05}):Play()
+        
+        print("Autocomplete dropdown should now be visible") -- Debug print
+    else
+        print("No matches found, clearing suggestions") -- Debug print
+        clearSuggestions()
+    end
+end
+
+local function fadeIn()
+    commandBarFrame.Visible = true
+    
+    -- Fade in the frame background
+    local frameTween = TweenService:Create(commandBarFrame, tweenInfo, {
+        BackgroundTransparency = 0.15
+    })
+    
+    -- Fade in the stroke
+    local strokeTween = TweenService:Create(barStroke, tweenInfo, {
+        Transparency = 0.5
+    })
+    
+    -- Fade in the text
+    local textTween = TweenService:Create(commandTextBox, tweenInfo, {
+        TextTransparency = 0,
+        PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
+    })
+    
+    frameTween:Play()
+    strokeTween:Play()
+    textTween:Play()
+end
+
+local function fadeOut()
+    -- Fade out the frame background
+    local frameTween = TweenService:Create(commandBarFrame, tweenInfo, {
+        BackgroundTransparency = 1
+    })
+    
+    -- Fade out the stroke
+    local strokeTween = TweenService:Create(barStroke, tweenInfo, {
+        Transparency = 1
+    })
+    
+    -- Fade out the text
+    local textTween = TweenService:Create(commandTextBox, tweenInfo, {
+        TextTransparency = 1,
+        PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
+    })
+    
+    -- Fade out suggestion
+    if autocompleteFrame.Visible then
+        TweenService:Create(autocompleteFrame, tweenInfo, {
+            BackgroundTransparency = 1
+        }):Play()
+    end
+    
+    frameTween:Play()
+    strokeTween:Play()
+    textTween:Play()
+    
+    -- Hide the frame after animation completes
+    frameTween.Completed:Connect(function()
+        if not barVisible then
+            commandBarFrame.Visible = false
+            clearSuggestions()
+        end
+    end)
+end
+
+-- Handle T key press to toggle command bar
+UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    -- Ignore input if it's already being processed by Roblox (e.g., typing in a chat box)
+    if gameProcessedEvent then return end
+
+    if input.KeyCode == _G.CmdBarKeybind then
+        barVisible = not barVisible
+        
+        if barVisible then
+            fadeIn()
+            wait(0.1) -- Small delay to ensure animation starts
+            commandTextBox:CaptureFocus() -- Automatically focus the textbox when it appears
+            updateAutocomplete() -- Update autocomplete in case there's existing text
+        else
+            commandTextBox:ReleaseFocus() -- Release focus when hidden
+            commandTextBox.Text = "" -- Clear text when hidden
+            clearSuggestions() -- Hide suggestions when hidden
+            fadeOut()
+        end
+    end
+end)
+
+-- Connect autocomplete update to text changes
+commandTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    print("Text changed to: '" .. commandTextBox.Text .. "'") -- Debug print
+    updateAutocomplete()
+end)
+
+-- Track if we're autocompleting to prevent premature closing
+local isAutocompleting = false
+
+-- Handle other navigation keys when textbox is focused
+commandTextBox.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
+        -- Use Enter to accept first suggestion if available, otherwise submit command
+        if #autocompleteMatches > 0 and commandTextBox.Text ~= "" then
+            local firstWord = commandTextBox.Text:match("^(%S*)") or ""
+            if firstWord ~= autocompleteMatches[1] then -- Only autocomplete if it's not already complete
+                isAutocompleting = true
+                selectSuggestion(autocompleteMatches[selectedIndex])
+                -- Refocus the textbox after autocomplete
+                task.wait(0.05)
+                commandTextBox:CaptureFocus()
+                isAutocompleting = false
+                return -- Don't submit the command yet
+            end
+        end
+    elseif input.KeyCode == Enum.KeyCode.Down then
+        -- Navigate down in suggestions
+        if #autocompleteMatches > 0 then
+            selectedIndex = selectedIndex + 1
+            if selectedIndex > #autocompleteMatches then
+                selectedIndex = 1
+            end
+            updateSelectedSuggestion()
+        end
+    elseif input.KeyCode == Enum.KeyCode.Up then
+        -- Navigate up in suggestions
+        if #autocompleteMatches > 0 then
+            selectedIndex = selectedIndex - 1
+            if selectedIndex < 1 then
+                selectedIndex = #autocompleteMatches
+            end
+            updateSelectedSuggestion()
+        end
+    elseif input.KeyCode == Enum.KeyCode.Escape then
+        -- Close suggestions
+        clearSuggestions()
+    end
+end)
+
+-- Hide suggestion on focus lost or command submit
+commandTextBox.FocusLost:Connect(function(enterPressed)
+    -- Don't close if we're in the middle of autocompleting
+    if isAutocompleting then
+        return
+    end
+    
+    -- Small delay to allow clicks on suggestions
+    task.wait(0.1)
+    clearSuggestions()
+    
+    if enterPressed and commandTextBox.Text ~= "" then
+        local command = commandTextBox.Text:gsub("^%s+", ""):gsub("%s+$", "") -- Trim whitespace
+        
+        -- Add prefix and process the command
+        local fullCommand = prefix .. command
+        
+        -- Process the command using your existing processCommand function
+        processCommand(fullCommand)
+        
+        commandTextBox.Text = ""
+        barVisible = false
+        fadeOut()
+    end
+end)
+
+-- Main command processing function (chat) - your existing chat handler
+LocalPlayer.Chatted:Connect(function(msg)
+    processCommand(msg)
+end)
