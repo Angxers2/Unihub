@@ -5943,14 +5943,23 @@ function _G.ESPObject:Update()
     end
     
     -- Update distance
-    if _G.ESPConfig.ESP.ShowDistance then
-        self.Drawings.Distance.Text = math.floor(_G.TempDistance) .. "m"
-        self.Drawings.Distance.Position = Vector2.new(_G.TempRootPos.X, _G.TempLegPos.Y + 5)
-        self.Drawings.Distance.Color = _G.ESPConfig.Colors.Distance
-        self.Drawings.Distance.Visible = true
-    else
-        self.Drawings.Distance.Visible = false
-    end
+  -- Update distance
+if _G.ESPConfig.ESP.ShowDistance then
+    local distanceInMeters = _G.TempDistance * 0.28 -- Convert studs to meters
+    self.Drawings.Distance.Text = math.floor(distanceInMeters) .. "m"
+    self.Drawings.Distance.Position = Vector2.new(_G.TempRootPos.X, _G.TempLegPos.Y + 5)
+    self.Drawings.Distance.Color = _G.ESPConfig.Colors.Distance
+    self.Drawings.Distance.Visible = true
+elseif _G.ESPConfig.ESP.ShowDistanceStuds then
+    self.Drawings.Distance.Text = math.floor(_G.TempDistance) .. " studs"
+    self.Drawings.Distance.Position = Vector2.new(_G.TempRootPos.X, _G.TempLegPos.Y + 5)
+    self.Drawings.Distance.Color = _G.ESPConfig.Colors.Distance
+    self.Drawings.Distance.Visible = true
+else
+    self.Drawings.Distance.Visible = false
+end
+
+
     
     -- Update skeleton
     if _G.ESPConfig.ESP.ShowSkeleton then
@@ -6268,11 +6277,20 @@ ESPTab:CreateColorPicker({
 ESPTab:CreateSection("Distance")
 
 ESPTab:CreateToggle({
-    Name = "Show Distance",
+    Name = "Show Distance (Meters)",
     CurrentValue = _G.ESPConfig.ESP.ShowDistance,
     Flag = "ShowDistance",
     Callback = function(Value)
         _G.ESPConfig.ESP.ShowDistance = Value
+    end,
+})
+
+ESPTab:CreateToggle({
+    Name = "Show Distance (Studs)",
+    CurrentValue = _G.ESPConfig.ESP.ShowDistanceStuds,
+    Flag = "ShowDistance",
+    Callback = function(Value)
+        _G.ESPConfig.ESP.ShowDistanceStuds = Value
     end,
 })
 
@@ -6429,6 +6447,8 @@ InitializeESPSystem()
 local TargetTab = Window:CreateTab("Target", "user") -- Title, Image
 local Section = TargetTab:CreateSection("Target")
 
+
+
 -- Define global variables
 local targetPlayer = nil
 local markParts = {}
@@ -6495,6 +6515,47 @@ local TargetBox = TargetTab:CreateInput({
     end,
 })
 
+-- Always watch targetPlayer and notify if they leave/reappear
+spawn(function()
+    local wasInGame = false
+    local hasDisappeared = false
+
+    while true do
+        if targetPlayer then
+            local stillInGame = game.Players:FindFirstChild(targetPlayer.Name)
+
+            if stillInGame then
+                -- If they reappeared after disappearing
+                if hasDisappeared then
+                    local name = targetPlayer.DisplayName or targetPlayer.Name
+                    Rayfield:Notify({
+                        Title = "Target Reappeared",
+                        Content = name .. " has rejoined the game.",
+                        Duration = 4,
+                        Image = "bell"
+                    })
+                    hasDisappeared = false
+                end
+                wasInGame = true
+            else
+                -- If they disappeared while being tracked
+                if wasInGame and not hasDisappeared then
+                    local name = targetPlayer.DisplayName or targetPlayer.Name
+                    Rayfield:Notify({
+                        Title = "Target Has Disappeared",
+                        Content = name .. " has left the game.",
+                        Duration = 4,
+                        Image = "bell"
+                    })
+                    hasDisappeared = true
+                end
+            end
+        end
+        wait(0.5) -- check twice per second
+    end
+end)
+
+
 
 
 
@@ -6552,6 +6613,94 @@ local UnviewButton = TargetTab:CreateButton({
 		-- No notification is shown here
 	end,
 })
+
+-- Create the View button
+WatchActivityButton = TargetTab:CreateButton({
+	Name = "Watch Activity", 
+	Callback = function()
+		local playerToWatch = targetPlayer -- or replace with whoever you want
+
+		if not playerToWatch then
+			Rayfield:Notify({
+				Title = "No Player Selected",
+				Content = "Please set a player to watch first.",
+				Duration = 4,
+				Image = "bell"
+			})
+			return
+		end
+
+		Rayfield:Notify({
+			Title = "Watching Player",
+			Content = "Now watching " .. (playerToWatch.DisplayName or playerToWatch.Name) .. "'s activity.",
+			Duration = 4,
+			Image = "bell"
+		})
+
+		spawn(function()
+			local hasDisappeared = false
+
+			local function connectCharacter(character)
+				local humanoid = character:WaitForChild("Humanoid", 5)
+				if humanoid then
+					humanoid.Died:Connect(function()
+						Rayfield:Notify({
+							Title = "Player Died",
+							Content = (playerToWatch.DisplayName or playerToWatch.Name) .. " has died.",
+							Duration = 4,
+							Image = "bell"
+						})
+					end)
+				end
+			end
+
+			-- Connect respawn event every time character spawns
+			playerToWatch.CharacterAdded:Connect(function(char)
+				Rayfield:Notify({
+					Title = "Player Respawned",
+					Content = (playerToWatch.DisplayName or playerToWatch.Name) .. " has respawned.",
+					Duration = 4,
+					Image = "bell"
+				})
+				connectCharacter(char)
+			end)
+
+			-- Connect current character if exists
+			if playerToWatch.Character then
+				connectCharacter(playerToWatch.Character)
+			end
+
+			while playerToWatch do
+				local playerInstance = game.Players:FindFirstChild(playerToWatch.Name)
+				if playerInstance then
+					if hasDisappeared then
+						local name = playerToWatch.DisplayName or playerToWatch.Name
+						Rayfield:Notify({
+							Title = "Player Reappeared",
+							Content = name .. " has rejoined the game.",
+							Duration = 4,
+							Image = "bell"
+						})
+						hasDisappeared = false
+					end
+				else
+					if not hasDisappeared then
+						local name = playerToWatch.DisplayName or playerToWatch.Name
+						Rayfield:Notify({
+							Title = "Player Disappeared",
+							Content = name .. " has left the game.",
+							Duration = 4,
+							Image = "bell"
+						})
+						hasDisappeared = true
+					end
+				end
+				wait(0.5)
+			end
+		end)
+	end,
+})
+
 
 
 
@@ -6700,6 +6849,11 @@ end
 
 -- Start updating the dot and arrows
 spawn(updateDotAndArrows) -- Use spawn to run the update in a separate thread
+
+
+
+
+
 
 
 
@@ -6917,6 +7071,59 @@ local SpeedSlider = TargetTab:CreateSlider({
 
 local InfoSection = TargetTab:CreateSection("Info")
 
+-- Create a label for join date and days since creation
+-- Global variable to store the target's full join date
+-- Global variable to store the target's full join date
+_G.TargetJoinDate = "N/A"
+
+-- Create a label to show join date and days since creation
+local TargetJoinLabel = TargetTab:CreateLabel("Target Join Date: N/A | Days Since Creation: N/A")
+
+-- Function to get ordinal for the day (1st, 2nd, 3rd, etc.)
+local function getOrdinal(day)
+    if day % 10 == 1 and day ~= 11 then
+        return day .. "st"
+    elseif day % 10 == 2 and day ~= 12 then
+        return day .. "nd"
+    elseif day % 10 == 3 and day ~= 13 then
+        return day .. "rd"
+    else
+        return day .. "th"
+    end
+end
+
+-- Update the label and global variable
+spawn(function()
+    while true do
+        if targetPlayer then
+            local daysSinceCreation = math.floor(targetPlayer.AccountAge)
+            local creationTimestamp = os.time() - (daysSinceCreation * 24 * 60 * 60)
+            local dateTable = os.date("*t", creationTimestamp)
+
+            local weekday = os.date("%A", creationTimestamp) -- e.g., Thursday
+            local month = os.date("%B", creationTimestamp) -- e.g., August
+            local day = getOrdinal(dateTable.day)
+            local year = dateTable.year
+
+            local fullDate = weekday .. " " .. month .. " " .. day .. " " .. year
+
+            -- Store in global variable
+            _G.TargetJoinDate = fullDate
+
+            -- Update label
+            TargetJoinLabel:Set("Target Join Date: " .. fullDate .. " | Days Since Creation: " .. daysSinceCreation)
+        else
+            _G.TargetJoinDate = "N/A"
+            TargetJoinLabel:Set("Target Join Date: N/A | Days Since Creation: N/A")
+        end
+        wait(5)
+    end
+end)
+
+
+
+
+
 
 
 -- Create a label to show distance to target
@@ -6927,13 +7134,17 @@ spawn(function()
     while true do
         if targetPlayer and game.Players.LocalPlayer.Character and targetPlayer.Character then
             local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - targetPlayer.Character.HumanoidRootPart.Position).Magnitude
-            DistanceLabel:Set("Distance to Target: " .. string.format("%.2f", distance) .. " studs")
+            local studs = math.floor(distance)
+            local meters = math.floor(distance * 0.28)
+            DistanceLabel:Set("Distance to Target: " .. studs .. " studs (" .. meters .. " m)")
         else
             DistanceLabel:Set("Distance to Target: N/A")
         end
         wait(0.1) -- Update every 0.1 seconds
     end
 end)
+
+
 
 -- Nearby Players Label
 local NearbyPlayersLabel = TargetTab:CreateLabel("Users Near Target: N/A")
@@ -7032,6 +7243,58 @@ local CopyUserIDButton = TargetTab:CreateButton({
 	
 	end,
  })
+
+-- Create a button to copy the target's join date
+JoinDateButton = TargetTab:CreateButton({
+	Name = "Copy Target Join Date",
+	Callback = function()
+		if not targetPlayer then
+			Rayfield:Notify({
+				Title = "No Player Selected",
+				Content = "Please set a target first.",
+				Duration = 4,
+				Image = "bell"
+			})
+			return
+		end
+
+		-- Function to get ordinal for the day
+		local function getOrdinal(day)
+			if day % 10 == 1 and day ~= 11 then
+				return day .. "st"
+			elseif day % 10 == 2 and day ~= 12 then
+				return day .. "nd"
+			elseif day % 10 == 3 and day ~= 13 then
+				return day .. "rd"
+			else
+				return day .. "th"
+			end
+		end
+
+		-- Calculate full join date
+		local daysSinceCreation = math.floor(targetPlayer.AccountAge)
+		local creationTimestamp = os.time() - (daysSinceCreation * 24 * 60 * 60)
+		local dateTable = os.date("*t", creationTimestamp)
+
+		local weekday = os.date("%A", creationTimestamp)
+		local month = os.date("%B", creationTimestamp)
+		local day = getOrdinal(dateTable.day)
+		local year = dateTable.year
+
+		local fullDate = weekday .. " " .. month .. " " .. day .. " " .. year
+
+		-- Copy to clipboard
+		setclipboard(fullDate)
+
+		-- Notify
+		Rayfield:Notify({
+			Title = "Copied Join Date!",
+			Content = "Copied " .. fullDate,
+			Duration = 4,
+			Image = "bell"
+		})
+	end,
+})
 
 
 
