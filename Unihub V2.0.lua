@@ -5445,7 +5445,12 @@ local function checkBlur()
     end
 end
 
-
+StatsButton = MiscTab:CreateButton({
+    Name = "Show Stats",
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/ZKw8UCT5",true))()
+    end,
+})
 
 
 local Button = MiscTab:CreateButton({
@@ -5454,6 +5459,8 @@ local Button = MiscTab:CreateButton({
 		checkBlur()
 	end,
 })
+
+
 
 
 
@@ -5475,7 +5482,8 @@ local Button = MiscTab:CreateButton({
  })
 
  -- Server Hop Button
- local ServerHopButton = MiscTab:CreateButton({
+
+ServerHopButton = MiscTab:CreateButton({
     Name = "Server Hop",
     Callback = function()
         Rayfield:Notify({
@@ -5483,12 +5491,12 @@ local Button = MiscTab:CreateButton({
             Content = "Finding Server...",
             Duration = 3,
         })
-        
+
         local PlaceId = game.PlaceId
         local AllIDs = {}
         local foundAnything = ""
         local actualHour = os.date("!*t").hour
-        
+
         local function TPReturner()
             local Site
             if foundAnything == "" then
@@ -5508,19 +5516,18 @@ local Button = MiscTab:CreateButton({
                 end
             end
 
-			if #eligibleServers > 0 then
-				local randomServerID = eligibleServers[math.random(1, #eligibleServers)]
-				table.insert(AllIDs, randomServerID)
-			
-				local storedServerID = randomServerID
-			
-                
+            if #eligibleServers > 0 then
+                local randomServerID = eligibleServers[math.random(1, #eligibleServers)]
+                table.insert(AllIDs, randomServerID)
+
+                local storedServerID = randomServerID
+
                 Rayfield:Notify({
                     Title = "Server Found",
                     Content = "Hopping to ".. storedServerID,
                     Duration = 3
                 })
-                
+
                 game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceId, randomServerID, game.Players.LocalPlayer)
             else
                 Rayfield:Notify({
@@ -5530,7 +5537,7 @@ local Button = MiscTab:CreateButton({
                 })
             end
         end
-        
+
         TPReturner()
     end,
 })
@@ -5625,9 +5632,429 @@ local DisableStatsButton = MiscTab:CreateButton({
     end
 })
 
+ServerHopSection = MiscTab:CreateSection("Server Hop (Advanced)")
 
+-- ═══════════════════════════════════════════════════════════════
+--                    ADVANCED SERVER HOP SYSTEM
+-- ═══════════════════════════════════════════════════════════════
 
--- Rejoin Button
+-- ═══════════════════════════════════════════════════════════════
+--                        GLOBAL VARIABLES
+-- ═══════════════════════════════════════════════════════════════
+serverHopMode = "Random"
+minPlayers = 1
+maxPlayers = game.Players.MaxPlayers or 100 -- Dynamic based on current game
+excludeCurrentServer = true
+hopAttempts = 0
+isCustomMode = false -- Track if user has customized settings
+
+-- ═══════════════════════════════════════════════════════════════
+--                         CORE FUNCTIONS  
+-- ═══════════════════════════════════════════════════════════════
+
+-- Helper function to apply preset values based on mode
+function applyPresetValues(mode)
+    if mode == "Random" then
+        minPlayers = 1
+        maxPlayers = game.Players.MaxPlayers or 100
+        excludeCurrentServer = true
+    elseif mode == "Smallest" then
+        minPlayers = 1
+        maxPlayers = math.floor((game.Players.MaxPlayers or 100) * 0.3) -- 30% of max
+        excludeCurrentServer = true
+    elseif mode == "Largest" then
+        minPlayers = math.floor((game.Players.MaxPlayers or 100) * 0.7) -- 70% of max
+        maxPlayers = game.Players.MaxPlayers or 100
+        excludeCurrentServer = true
+    elseif mode == "Medium" then
+        minPlayers = math.floor((game.Players.MaxPlayers or 100) * 0.3) -- 30% of max
+        maxPlayers = math.floor((game.Players.MaxPlayers or 100) * 0.7) -- 70% of max
+        excludeCurrentServer = true
+    elseif mode == "Low Ping" then
+        minPlayers = 5 -- Avoid empty servers for better ping data
+        maxPlayers = game.Players.MaxPlayers or 100
+        excludeCurrentServer = true
+    end
+    
+    -- Update slider values if they exist
+    if MinPlayersSlider then
+        MinPlayersSlider:Set(minPlayers)
+    end
+    if MaxPlayersSlider then
+        MaxPlayersSlider:Set(maxPlayers)
+    end
+    if ExcludeCurrentToggle then
+        ExcludeCurrentToggle:Set(excludeCurrentServer)
+    end
+    
+    isCustomMode = false
+end
+
+function getServerList()
+    PlaceId = game.PlaceId
+    currentJobId = game.JobId
+    allServers = {}
+    cursor = ""
+    
+    -- Collect servers from multiple pages
+    for page = 1, 3 do -- Get up to 3 pages (300 servers)
+        url = 'https://games.roblox.com/v1/games/' .. PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'
+        if cursor ~= "" then
+            url = url .. '&cursor=' .. cursor
+        end
+        
+        success, site = pcall(function()
+            return game.HttpService:JSONDecode(game:HttpGet(url))
+        end)
+        
+        if not success then
+            break
+        end
+        
+        for _, server in pairs(site.data) do
+            -- Filter servers based on criteria
+            hasAvailableSpots = tonumber(server.maxPlayers) > tonumber(server.playing)
+            meetsMinPlayers = tonumber(server.playing) >= minPlayers
+            meetsMaxPlayers = tonumber(server.playing) <= maxPlayers
+            notCurrentServer = not excludeCurrentServer or server.id ~= currentJobId
+            
+            if hasAvailableSpots and meetsMinPlayers and meetsMaxPlayers and notCurrentServer then
+                table.insert(allServers, {
+                    id = server.id,
+                    playing = tonumber(server.playing),
+                    maxPlayers = tonumber(server.maxPlayers),
+                    ping = server.ping or 0
+                })
+            end
+        end
+        
+        if site.nextPageCursor then
+            cursor = site.nextPageCursor
+        else
+            break
+        end
+    end
+    
+    return allServers
+end
+
+function selectServerByMode(servers)
+    if #servers == 0 then
+        return nil
+    end
+    
+    if serverHopMode == "Random" then
+        return servers[math.random(1, #servers)]
+        
+    elseif serverHopMode == "Smallest" then
+        table.sort(servers, function(a, b) return a.playing < b.playing end)
+        return servers[1]
+        
+    elseif serverHopMode == "Largest" then
+        table.sort(servers, function(a, b) return a.playing > b.playing end)
+        return servers[1]
+        
+    elseif serverHopMode == "Medium" then
+        table.sort(servers, function(a, b) return a.playing < b.playing end)
+        midIndex = math.ceil(#servers / 2)
+        return servers[midIndex]
+        
+    elseif serverHopMode == "Low Ping" then
+        table.sort(servers, function(a, b) return a.ping < b.ping end)
+        return servers[1]
+    end
+    
+    return servers[1] -- Fallback
+end
+
+-- Create dropdown for server hop mode
+ServerHopModeDropdown = MiscTab:CreateDropdown({
+    Name = "Server Hop Mode",
+    Options = {"Random", "Smallest", "Largest", "Medium", "Low Ping", "Custom"},
+    CurrentOption = {"Random"},
+    Flag = "ServerHopMode",
+    Callback = function(Value)
+        selectedMode = Value[1] or Value -- Handle both table and string formats
+        
+        if selectedMode ~= "Custom" then
+            serverHopMode = selectedMode
+            applyPresetValues(selectedMode)
+            Rayfield:Notify({
+                Title = "Preset Applied",
+                Content = "Applied " .. tostring(selectedMode) .. " preset settings",
+                Duration = 2,
+                Image = "bell"
+            })
+        else
+            serverHopMode = "Custom"
+            isCustomMode = true
+            Rayfield:Notify({
+                Title = "Custom Mode",
+                Content = "Using your custom slider settings",
+                Duration = 2,
+                Image = "bell"
+            })
+        end
+    end,
+})
+
+-- Create slider for minimum players
+MinPlayersSlider = MiscTab:CreateSlider({
+    Name = "Minimum Players",
+    Range = {0, game.Players.MaxPlayers or 100},
+    Increment = 1,
+    Suffix = " players",
+    CurrentValue = 1,
+    Flag = "MinPlayers",
+    Callback = function(Value)
+        minPlayers = Value
+        -- If user manually changes slider and it's not custom mode, switch to custom
+        if not isCustomMode and serverHopMode ~= "Custom" then
+            serverHopMode = "Custom"
+            isCustomMode = true
+            ServerHopModeDropdown:Set({"Custom"})
+            Rayfield:Notify({
+                Title = "Switched to Custom",
+                Content = "Mode changed to Custom due to manual adjustment",
+                Duration = 2,
+                Image = "bell"
+            })
+        end
+    end,
+})
+
+-- Create slider for maximum players  
+MaxPlayersSlider = MiscTab:CreateSlider({
+    Name = "Maximum Players",
+    Range = {1, game.Players.MaxPlayers or 100},
+    Increment = 1,
+    Suffix = " players", 
+    CurrentValue = game.Players.MaxPlayers or 100,
+    Flag = "MaxPlayers",
+    Callback = function(Value)
+        maxPlayers = Value
+        -- If user manually changes slider and it's not custom mode, switch to custom
+        if not isCustomMode and serverHopMode ~= "Custom" then
+            serverHopMode = "Custom"
+            isCustomMode = true
+            ServerHopModeDropdown:Set({"Custom"})
+            Rayfield:Notify({
+                Title = "Switched to Custom",
+                Content = "Mode changed to Custom due to manual adjustment",
+                Duration = 2,
+            })
+        end
+    end,
+})
+
+-- Toggle to exclude current server
+ExcludeCurrentToggle = MiscTab:CreateToggle({
+    Name = "Exclude Current Server",
+    CurrentValue = true,
+    Flag = "ExcludeCurrentServer",
+    Callback = function(Value)
+        excludeCurrentServer = Value
+        -- If user manually changes toggle and it's not custom mode, switch to custom
+        if not isCustomMode and serverHopMode ~= "Custom" then
+            serverHopMode = "Custom"
+            isCustomMode = true
+            ServerHopModeDropdown:Set({"Custom"})
+            Rayfield:Notify({
+                Title = "Switched to Custom",
+                Content = "Mode changed to Custom due to manual adjustment",
+                Duration = 2,
+            })
+        end
+    end,
+})
+
+-- Enhanced Server Hop Button
+ServerHopButton = MiscTab:CreateButton({
+    Name = "Server Hop (Custom Settings)",
+    Callback = function()
+        hopAttempts = hopAttempts + 1
+        
+        Rayfield:Notify({
+            Title = "Server Hop",
+            Content = "Finding servers... (Attempt " .. hopAttempts .. ")",
+            Duration = 3,
+            Image = "bell"
+        })
+        
+        servers = getServerList()
+        
+        if #servers == 0 then
+            Rayfield:Notify({
+                Title = "Server Hop Failed",
+                Content = "No servers match your criteria. Try adjusting settings.",
+                Duration = 4,
+                Image = "bell"
+            })
+            return
+        end
+        
+        selectedServer = selectServerByMode(servers)
+        
+        if selectedServer then
+            modeText = tostring(serverHopMode)
+            if serverHopMode == "Smallest" or serverHopMode == "Largest" or serverHopMode == "Medium" then
+                modeText = modeText .. " (" .. selectedServer.playing .. "/" .. selectedServer.maxPlayers .. ")"
+            end
+            
+            Rayfield:Notify({
+                Title = "Server Found (" .. modeText .. ")",
+                Content = "Hopping to server...",
+                Duration = 2,
+                Image = "bell"
+            })
+            
+            wait(1)
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, selectedServer.id, game.Players.LocalPlayer)
+        else
+            Rayfield:Notify({
+                Title = "Server Hop Failed",
+                Content = "Could not find suitable server.",
+                Duration = 3,
+                Image = "bell"
+            })
+        end
+    end,
+})
+
+ServerHopSection = MiscTab:CreateSection("Server Hop (Others)")
+
+-- Quick hop buttons for common scenarios
+QuickHopSmallest = MiscTab:CreateButton({
+    Name = "Quick Hop - Smallest Server",
+    Callback = function()
+        originalMode = serverHopMode
+        serverHopMode = "Smallest"
+        
+        servers = getServerList()
+        selectedServer = selectServerByMode(servers)
+        
+        if selectedServer then
+            Rayfield:Notify({
+                Title = "Quick Hop - Smallest",
+                Content = "Found server with " .. selectedServer.playing .. " players",
+                Duration = 2,
+                Image = "bell"
+            })
+            wait(1)
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, selectedServer.id, game.Players.LocalPlayer)
+        else
+            Rayfield:Notify({
+                Title = "Quick Hop Failed",
+                Content = "No small servers available",
+                Duration = 3,
+                Image = "bell"
+            })
+        end
+        
+        serverHopMode = originalMode
+    end,
+})
+
+QuickHopLargest = MiscTab:CreateButton({
+    Name = "Quick Hop - Largest Server", 
+    Callback = function()
+        originalMode = serverHopMode
+        serverHopMode = "Largest"
+        
+        servers = getServerList()
+        selectedServer = selectServerByMode(servers)
+        
+        if selectedServer then
+            Rayfield:Notify({
+                Title = "Quick Hop - Largest",
+                Content = "Found server with " .. selectedServer.playing .. " players",
+                Duration = 2,
+                Image = "bell"
+            })
+            wait(1)
+            game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, selectedServer.id, game.Players.LocalPlayer)
+        else
+            Rayfield:Notify({
+                Title = "Quick Hop Failed", 
+                Content = "No large servers available",
+                Duration = 3,
+                Image = "bell"
+            })
+        end
+        
+        serverHopMode = originalMode
+    end,
+})
+
+-- Reset hop attempts counter
+ResetCounterButton = MiscTab:CreateButton({
+    Name = "Reset Hop Counter",
+    Callback = function()
+        hopAttempts = 0
+        Rayfield:Notify({
+            Title = "Counter Reset",
+            Content = "Hop attempts counter reset to 0",
+            Duration = 2,
+            Image = "bell"
+        })
+    end,
+})
+
+ServerHopSection = MiscTab:CreateSection("Server Info")
+
+-- Server info label that updates automatically
+function updateServerInfoLabel()
+    players = #game.Players:GetPlayers()
+    maxPlayersInServer = game.Players.MaxPlayers
+    jobId = game.JobId
+    
+    if ServerInfoLabel then
+        ServerInfoLabel:Set("Current Server: " .. players .. "/" .. maxPlayersInServer .. " players | ID: " .. jobId)
+    end
+end
+
+ServerInfoLabel = MiscTab:CreateLabel("Current Server: Loading...")
+
+-- Update the label initially and every 5 seconds
+updateServerInfoLabel()
+spawn(function()
+    while wait(5) do
+        updateServerInfoLabel()
+    end
+end)
+
+-- Copy server ID button
+CopyServerIdButton = MiscTab:CreateButton({
+    Name = "Copy Server ID",
+    Callback = function()
+        jobId = game.JobId
+        setclipboard(jobId)
+        Rayfield:Notify({
+            Title = "Server ID Copied",
+            Content = "Copied: " .. string.sub(jobId, 1, 12) .. "...",
+            Duration = 2,
+            Image = "bell"
+        })
+    end,
+})
+
+-- Copy server link button
+CopyServerLinkButton = MiscTab:CreateButton({
+    Name = "Copy Server Link",
+    Callback = function()
+        placeId = game.PlaceId
+        jobId = game.JobId
+        serverLink = "https://www.roblox.com/games/" .. placeId .. "?privateServerLinkCode=" .. jobId
+        setclipboard(serverLink)
+        Rayfield:Notify({
+            Title = "Server Link Copied",
+            Content = "Server link copied to clipboard",
+            Duration = 2,
+            Image = "bell"
+        })
+    end,
+})
+
 
 
 
