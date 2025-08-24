@@ -108,6 +108,11 @@ Small Update
 - More Neat Looking
 - Switched To Lucide Icons Instead Of Emojis
 
+**V2.0** **5** 
+- Added Diffrent Measurment Units (ESP and Target Tab)
+- Added Join Date Options In Target Tab
+- Added New Watch Activity Feature In Target Tab (Tracks If Specified User Has Left,Rejoined,Respawned,Died And Notifies)
+
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
 
