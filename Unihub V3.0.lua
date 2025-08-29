@@ -1,6 +1,7 @@
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local startTime = tick()
+local latestVersion = loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/main/version.lua", true))()
 
 -- Create a sound object
 local sound = Instance.new("Sound")
@@ -68,15 +69,14 @@ end)
 local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 
-local Version = "V2.0"
+local Version = "V3.0"
 -- List of Logo IDs
 local LogoIDs = {
-    "94607480460598",
-    "129256374815331",
-    "79596686889467"
+    "139581664357521"
 }
-
 local Date = os.date("%B %d")
+
+local LatestReleaseDate = loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/main/version.lua",true))()
 
 
 local Errors = loadstring(game:HttpGet("https://pastebin.com/raw/R3NSxp0r",true))()
@@ -250,80 +250,201 @@ else
     greeting = "Good night"
 end
 
--- Create Welcome Tab
 local MarketplaceService = game:GetService("MarketplaceService")
 
--- Get the game info, specifically the name
+-- Get the game info
 local gameInfo = MarketplaceService:GetProductInfo(game.PlaceId)
 local currentGameName = gameInfo.Name
 
 -- Create Welcome Tab
 local WelcomeTab = Window:CreateTab("Welcome", "door-open") -- Title, Image
 
-
-
 --==[ Welcome Section ]==--
-
 local WelcomeSection = WelcomeTab:CreateSection("Welcome")
 
 local displayText = player.DisplayName
 if player.UserId == 7332803063 or player.UserId == 7846406408 then
     displayText = displayText .. " My Slave Arshvir"
 end
-local LabelGreeting = WelcomeTab:CreateLabel(greeting .. ", " .. displayText)
 
-WelcomeTab:CreateLabel("Executor: " .. (identifyexecutor() or "Unknown"))
+local LabelGreeting = WelcomeTab:CreateLabel(greeting .. ", " .. displayText, "smile") -- added icon
+
+WelcomeTab:CreateLabel("Executor: " .. (identifyexecutor() or "Unknown"), "cpu") -- added icon
+
+WelcomeTab:CreateLabel(string.format("Version %s | Released: %s", Version, LatestReleaseDate), "tag") -- added icon
+
+local UserInputService = game:GetService("UserInputService")
+
+-- Detect platform and choose icon
+local platformName = "Unknown"
+local platformIcon = "monitor" -- default icon
+
+if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
+    platformName = "Mobile"
+    platformIcon = "smartphone"
+elseif UserInputService.KeyboardEnabled then
+    platformName = "PC"
+    platformIcon = "monitor"
+elseif UserInputService.GamepadEnabled then
+    platformName = "Console"
+    platformIcon = "gamepad"
+end
+
+-- Create the label with dynamic icon
+local PlatformLabel = WelcomeTab:CreateLabel("Platform: " .. platformName, platformIcon)
+-- Create the label
+-- Create the label
+LocationLabel = WelcomeTab:CreateLabel("Location: Loading...")
+
+-- Function to update server location and ISP info
+function updateServerLocation()
+    LocationLabel:Set("Fetching location...", "map-pin")
+    success, result = pcall(function()
+        return game:HttpGet("https://ipinfo.io/json")
+    end)
+    
+    if success then
+        jsonData = game:GetService("HttpService"):JSONDecode(result)
+        city = jsonData.city or "Unknown"
+        region = jsonData.region or "Unknown"
+        country = jsonData.country or "Unknown"
+        isp = jsonData.org or "Unknown"
+
+        -- Set the label with all info
+        LocationLabel:Set(
+            city .. ", " .. region .. ", " .. country .. " | ISP: " .. isp,
+            "map-pin"
+        )
+    else
+        LocationLabel:Set("Location: Unknown | ISP: Unknown", "map-pin")
+    end
+end
+
+-- Initial fetch
+updateServerLocation()
+
+
+
+
 
 
 
 --==[ Date & Time Section ]==--
-
 local DateTimeSection = WelcomeTab:CreateSection("Date & Time")
 
-local TimeLabel = WelcomeTab:CreateLabel("Time: " .. os.date("%I:%M %p"))
+TimeLabel = WelcomeTab:CreateLabel("Time: " .. os.date("%A, %I:%M %p"), "clock") -- added icon
+DateLabel = WelcomeTab:CreateLabel("Date: " .. os.date("%B %d, %Y"), "calendar") -- added icon
+DaysUntilNextMonthLabel = WelcomeTab:CreateLabel("Days until next month: " .. (tonumber(os.date("%d")) - 1), "arrow-right") -- added icon
+TimezoneLabel = WelcomeTab:CreateLabel("Timezone: ", "map-pin") -- added icon
+
+TimezoneMap = {
+    -- North America
+    PST = "Pacific Standard Time (PST)",
+    PDT = "Pacific Daylight Time (PDT)",
+    MST = "Mountain Standard Time (MST)",
+    MDT = "Mountain Daylight Time (MDT)",
+    CST = "Central Standard Time (CST)",
+    CDT = "Central Daylight Time (CDT)",
+    EST = "Eastern Standard Time (EST)",
+    EDT = "Eastern Daylight Time (EDT)",
+    AST = "Atlantic Standard Time (AST)",
+    NST = "Newfoundland Standard Time (NST)",
+
+    -- Europe
+    GMT = "Greenwich Mean Time (GMT)",
+    BST = "British Summer Time (BST)",
+    CET = "Central European Time (CET)",
+    CEST = "Central European Summer Time (CEST)",
+    EET = "Eastern European Time (EET)",
+    EEST = "Eastern European Summer Time (EEST)",
+
+    -- Asia
+    IST = "India Standard Time (IST)",
+    CST_China = "China Standard Time (CST)",
+    JST = "Japan Standard Time (JST)",
+    KST = "Korea Standard Time (KST)",
+    HKT = "Hong Kong Time (HKT)",
+    SGT = "Singapore Time (SGT)",
+
+    -- Oceania
+    AEST = "Australian Eastern Standard Time (AEST)",
+    AEDT = "Australian Eastern Daylight Time (AEDT)",
+    ACST = "Australian Central Standard Time (ACST)",
+    ACDT = "Australian Central Daylight Time (ACDT)",
+    AWST = "Australian Western Standard Time (AWST)",
+
+    -- Other
+    UTC = "Coordinated Universal Time (UTC)"
+}
+
 spawn(function()
     while true do
-        TimeLabel:Set("Time: " .. os.date("%I:%M %p"))
+        TimeLabel:Set("Time: " .. os.date("%A, %I:%M %p"))
         wait(1)
     end
 end)
 
-local LabelDate = WelcomeTab:CreateLabel("Date: " .. os.date("%B %d, %Y"))
+spawn(function()
+    while true do
+        local current_day = tonumber(os.date("%d"))
+        local current_month = tonumber(os.date("%m"))
+        local current_year = tonumber(os.date("%Y"))
+
+        local next_month = current_month + 1
+        local next_year = current_year
+        if next_month > 12 then
+            next_month = 1
+            next_year = current_year + 1
+        end
+
+        local last_day = os.date("*t", os.time{year=next_year, month=next_month, day=0}).day
+        DaysUntilNextMonthLabel:Set("Days until next month: " .. (last_day - current_day))
+        wait(60)
+    end
+end)
+
+spawn(function()
+    while true do
+        local shortTz = os.date("%Z")
+        TimezoneLabel:Set("Timezone: " .. (TimezoneMap[shortTz] or shortTz))
+        wait(60)
+    end
+end)
+
+
 
 
 --==[ Game Status Section ]==--
 
+--==[ Current Game Section ]==--
 local GameSection = WelcomeTab:CreateSection("Current Game")
 
-local LabelCurrentGame = WelcomeTab:CreateLabel("Current Game: N/A")
+local LabelCurrentGame = WelcomeTab:CreateLabel("Current Game: N/A", "gamepad") -- default icon
 
 local function checkGame()
     local currentGameId = game.PlaceId
     if games[currentGameId] then
         if currentGameId == 155615604 or currentGameId == 3840352284 or currentGameId == 142823291 or currentGameId == 2788229376 or currentGameId == 6884319169 or currentGameId == 189707 then
-            LabelCurrentGame:Set("Current Game: " .. currentGameName .. " 🟢")
+            -- Supported game → green indicator icon
+            LabelCurrentGame:Set("Current Game: " .. currentGameName .. " | Supported", "check-circle")
         else
-            LabelCurrentGame:Set("Current Game: " .. currentGameName .. " 🟠")
+            -- Partially supported → orange indicator icon
+            LabelCurrentGame:Set("Current Game: " .. currentGameName .. " | Partial", "alert-circle")
         end
     else
-        LabelCurrentGame:Set("Current Game: " .. currentGameName .. " 🔴")
+        -- Unsupported → red indicator icon
+        LabelCurrentGame:Set("Current Game: " .. currentGameName .. " | Unsupported", "x-circle")
     end
 end
 
 checkGame()
 
-
-
-
 --==[ Error Info Section ]==--
-
 local ErrorSection = WelcomeTab:CreateSection("Known Issues")
 
-local LabelMessage = WelcomeTab:CreateLabel("Known Errors/Bugs: ".. Errors .. Date)
-
+local LabelMessage = WelcomeTab:CreateLabel("Known Errors/Bugs: " .. Errors .. Date, "alert-triangle")
 
 --==[ Discord & Website Section ]==--
-
 local LinksSection = WelcomeTab:CreateSection("Links")
 
 local DiscordButton = WelcomeTab:CreateButton({
@@ -362,15 +483,13 @@ local WebsiteButton = WelcomeTab:CreateButton({
 	end,
 })
 
-
 --==[ Utility Section ]==--
-
 local UtilitySection = WelcomeTab:CreateSection("Tools")
 
 WelcomeTab:CreateButton({
 	Name = "Execute Universal Hub Lite",
 	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.1",true))()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.1", true))()
 	end,
 })
 
@@ -5227,7 +5346,7 @@ teleportPlayer(teleportPosition)
           end
 		})
 
-		local MurderMysteryLabel1 = tab:CreateLabel("Theres Only A Little Bit But More Soon!")
+		local MurderMysteryLabel1 = tab:CreateLabel("Theres Only A Little Bit But More Soon!", "info")
 
 	elseif currentGameName == "Volleyball 4.2 🏐" then
 		
@@ -6003,25 +6122,44 @@ ResetCounterButton = MiscTab:CreateButton({
 ServerHopSection = MiscTab:CreateSection("Server Info")
 
 -- Server info label that updates automatically
-function updateServerInfoLabel()
-    players = #game.Players:GetPlayers()
-    maxPlayersInServer = game.Players.MaxPlayers
-    jobId = game.JobId
-    
-    if ServerInfoLabel then
-        ServerInfoLabel:Set("Current Server: " .. players .. "/" .. maxPlayersInServer .. " players | ID: " .. jobId)
-    end
+-- Create the labels
+PlayersLabel = MiscTab:CreateLabel("Players: Loading...")
+JobIdLabel = MiscTab:CreateLabel("Server ID: Loading...")
+UptimeLabel = MiscTab:CreateLabel("Uptime: Loading...")
+
+-- Track server start time (global)
+ServerStartTime = os.time()
+
+-- Function to calculate server uptime
+function getServerRuntime()
+    diff = os.time() - ServerStartTime
+    hours = math.floor(diff / 3600)
+    minutes = math.floor((diff % 3600) / 60)
+    seconds = diff % 60
+    return string.format("%02d:%02d:%02d", hours, minutes, seconds)
 end
 
-ServerInfoLabel = MiscTab:CreateLabel("Current Server: Loading...")
+-- Function to update all labels
+function updateServerInfo()
+    Players = #game.Players:GetPlayers()
+    MaxPlayers = game.Players.MaxPlayers
+    JobId = game.JobId
 
--- Update the label initially and every 5 seconds
-updateServerInfoLabel()
+    PlayersLabel:Set("Players: " .. Players .. "/" .. MaxPlayers, "server")
+    JobIdLabel:Set("Server ID: " .. JobId, "server")
+    UptimeLabel:Set("Uptime: " .. getServerRuntime(), "server")
+end
+
+-- Initial update
+updateServerInfo()
+
+-- Update every 5 seconds
 spawn(function()
     while wait(5) do
-        updateServerInfoLabel()
+        updateServerInfo()
     end
 end)
+
 
 -- Copy server ID button
 CopyServerIdButton = MiscTab:CreateButton({
@@ -6891,9 +7029,9 @@ local function findPlayer(input)
 	end
 	return nil
 end
-local Note1Label = TargetTab:CreateLabel("NOTE! The Target Can Be Display Or Username And Can Be Shortened To 3 Characters!") 
+local Note1Label = TargetTab:CreateLabel("NOTE! The Target Can Be Display Or Username And Can Be Shortened To 3 Characters!", "message-circle-warning") 
 
-local UserLabel = TargetTab:CreateLabel("Target: N/A") -- Initial label
+local UserLabel = TargetTab:CreateLabel("Target: N/A", "user") -- Initial label
 
  
 local function findPlayer(input)
@@ -6918,7 +7056,7 @@ local TargetBox = TargetTab:CreateInput({
         
 		if targetPlayer then
             -- Update the label to display the player's display name and username
-            UserLabel:Set("Target: " .. targetPlayer.DisplayName .. " (" .. targetPlayer.Name .. ")")
+            UserLabel:Set("Target: " .. targetPlayer.DisplayName .. " (" .. targetPlayer.Name .. ")", "user")
         else
             -- Notify the user if the player isn't found
             Rayfield:Notify({
@@ -6937,7 +7075,7 @@ local TargetBox = TargetTab:CreateInput({
             })
 
             -- Reset the label to show no target is selected
-            UserLabel:Set("Target: N/A")
+            UserLabel:Set("Target: N/A", "user")
         end
     end,
 })
@@ -7504,7 +7642,7 @@ local InfoSection = TargetTab:CreateSection("Info")
 _G.TargetJoinDate = "N/A"
 
 -- Create a label to show join date and days since creation
-local TargetJoinLabel = TargetTab:CreateLabel("Target Join Date: N/A | Days Since Creation: N/A")
+local TargetJoinLabel = TargetTab:CreateLabel("Target Join Date: N/A | Days Since Creation: N/A", "calendar-search")
 
 -- Function to get ordinal for the day (1st, 2nd, 3rd, etc.)
 local function getOrdinal(day)
@@ -7538,10 +7676,10 @@ spawn(function()
             _G.TargetJoinDate = fullDate
 
             -- Update label
-            TargetJoinLabel:Set("Target Join Date: " .. fullDate .. " | Days Since Creation: " .. daysSinceCreation)
+            TargetJoinLabel:Set("Target Join Date: " .. fullDate .. " | Days Since Creation: " .. daysSinceCreation, "calendar-search")
         else
             _G.TargetJoinDate = "N/A"
-            TargetJoinLabel:Set("Target Join Date: N/A | Days Since Creation: N/A")
+            TargetJoinLabel:Set("Target Join Date: N/A | Days Since Creation: N/A", "calendar-search")
         end
         wait(5)
     end
@@ -7554,7 +7692,7 @@ end)
 
 
 -- Create a label to show distance to target
-local DistanceLabel = TargetTab:CreateLabel("Distance to Target: N/A")
+local DistanceLabel = TargetTab:CreateLabel("Distance to Target: N/A", "ruler")
 
 -- Update the distance label
 spawn(function()
@@ -7563,9 +7701,9 @@ spawn(function()
             local distance = (game.Players.LocalPlayer.Character.HumanoidRootPart.Position - targetPlayer.Character.HumanoidRootPart.Position).Magnitude
             local studs = math.floor(distance)
             local meters = math.floor(distance * 0.28)
-            DistanceLabel:Set("Distance to Target: " .. studs .. " studs (" .. meters .. " m)")
+            DistanceLabel:Set("Distance to Target: " .. studs .. " studs (" .. meters .. " m)", "ruler")
         else
-            DistanceLabel:Set("Distance to Target: N/A")
+            DistanceLabel:Set("Distance to Target: N/A", "ruler")
         end
         wait(0.1) -- Update every 0.1 seconds
     end
@@ -7574,7 +7712,7 @@ end)
 
 
 -- Nearby Players Label
-local NearbyPlayersLabel = TargetTab:CreateLabel("Users Near Target: N/A")
+local NearbyPlayersLabel = TargetTab:CreateLabel("Users Near Target: N/A", "users")
 
 -- Function to get the preferred name of a player
 local function getPreferredName(player)
@@ -7599,12 +7737,12 @@ local function updateNearbyPlayers()
             end
         end
         if #nearbyPlayers > 0 then
-            NearbyPlayersLabel:Set("Users Near Target: " .. table.concat(nearbyPlayers, ", "))
+            NearbyPlayersLabel:Set("Users Near Target: " .. table.concat(nearbyPlayers, ", "), "users")
         else
-            NearbyPlayersLabel:Set("Users Near Target: None")
+            NearbyPlayersLabel:Set("Users Near Target: None", "users")
         end
     else
-        NearbyPlayersLabel:Set("Users Near Target: N/A")
+        NearbyPlayersLabel:Set("Users Near Target: N/A", "users")
     end
 end
 
@@ -7874,7 +8012,7 @@ local WebsiteButton = InfoTab:CreateButton({
 local Label2 = InfoTab:CreateLabel("This script will ALWAYS REMAIN FREE")
 local Label4 = InfoTab:CreateLabel("This script is frequently updated !")
 local Label5 = InfoTab:CreateLabel("This script was made fully by angxers")
-local VersionLabel = InfoTab:CreateLabel("Version ".. Version)
+local VersionLabel = InfoTab:CreateLabel("Version ".. Version, "rocket")
 
 
 print("Universal Hub loaded.")
