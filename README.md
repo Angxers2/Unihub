@@ -5,12 +5,12 @@ https://angxers2.github.io/Unihub/
 ## Script 
  **Paste this into your executor**
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V3.0.lua",true))()
 ```
 
 # Universal Hub
 
-**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of March 9, 2025, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
+**Universal Hub** is a versatile Roblox script designed to work with a wide range of games. As of August 29, 2025, it works exceptionally well with **Prison Life**, **Da Hood**, **Mic Up**, And **Murder Mystery 2**. While the script is still under development, it provides robust functionality across supported games.
 
 ## Updates
 **V1.0** 
@@ -112,6 +112,12 @@ Small Update
 - Added Diffrent Measurment Units (ESP and Target Tab)
 - Added Join Date Options In Target Tab
 - Added New Watch Activity Feature In Target Tab (Tracks If Specified User Has Left,Rejoined,Respawned,Died And Notifies)
+
+**V3.0** 
+- New Logos
+- Labels Now Use Lucide Icons
+- Welcome Tab Has Massively Updated
+- Optimizations 
 
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
