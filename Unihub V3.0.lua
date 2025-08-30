@@ -5554,6 +5554,13 @@ Terrain:FillBlock(CFrame.new(66, -10, 72.5), Vector3.new(10000, 16, 10000), Enum
 
 local Section = MiscTab:CreateSection("Others")
 
+StatsButton = MiscTab:CreateButton({
+    Name = "Bypass VC",
+    Callback = function()
+       forceRejoinVoiceChat()
+    end,
+})
+
 -- Function to check and modify blur
 local function checkBlur()
     local lighting = game:GetService("Lighting")
