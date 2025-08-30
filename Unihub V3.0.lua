@@ -5557,7 +5557,26 @@ local Section = MiscTab:CreateSection("Others")
 StatsButton = MiscTab:CreateButton({
     Name = "Bypass VC",
     Callback = function()
-       forceRejoinVoiceChat()
+             VoiceChatInternal = cloneref and cloneref(game:GetService("VoiceChatInternal")) or game:GetService("VoiceChatInternal")
+			 VoiceChatService = cloneref and cloneref(game:GetService("VoiceChatService")) or game:GetService("VoiceChatService")
+			
+			Rayfield:Notify({
+				Title = "Voice Chat Reconnection",
+				Content = "Attempting to reconnect to Voice Chat...",
+				Duration = 6.5,
+				Image = "bell",
+			})
+		
+			VoiceChatInternal:Leave()
+			wait(0.2)
+			VoiceChatService:rejoinVoice()
+			wait(0.1)
+			VoiceChatService:joinVoice()
+			wait(0.3)
+			VoiceChatInternal:Leave()
+			wait(0.3)
+			VoiceChatService:rejoinVoice()
+			VoiceChatService:joinVoice()
     end,
 })
 
