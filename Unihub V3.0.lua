@@ -489,7 +489,7 @@ local UtilitySection = WelcomeTab:CreateSection("Tools")
 WelcomeTab:CreateButton({
 	Name = "Execute Universal Hub Lite",
 	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.1", true))()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.2", true))()
 	end,
 })
 
@@ -1011,7 +1011,7 @@ local AdminsSection = ScriptsTab:CreateSection("Admins & Chat Interfaces")
 ScriptsTab:CreateButton({
 	Name = "Universal Hub Lite",
 	Callback = function()
-		loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.1",true))()
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/refs/heads/lite/Unihub%20Lite%20V1.2",true))()
 	end,
  })
 
