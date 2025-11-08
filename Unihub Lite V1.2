@@ -36,31 +36,20 @@ local function createNotificationSystem()
         return screenGui
     end
     
-    -- Create icon for different notification types
+    -- Create color indicator circle (no icon, just colored circle)
     local function createIcon(status, parent)
         local iconFrame = Instance.new("Frame")
         iconFrame.Name = "IconFrame"
-        iconFrame.Size = UDim2.new(0, 32, 0, 32)
-        iconFrame.Position = UDim2.new(0, 16, 0, 16)
+        iconFrame.Size = UDim2.new(0, 36, 0, 36)
+        iconFrame.Position = UDim2.new(0, 14, 0, 14)
         iconFrame.BackgroundTransparency = 1
         iconFrame.Parent = parent
         
-        local iconLabel = Instance.new("TextLabel")
-        iconLabel.Name = "IconLabel"
-        iconLabel.Size = UDim2.new(1, 0, 1, 0)
-        iconLabel.BackgroundTransparency = 1
-        iconLabel.Font = Enum.Font.GothamBold
-        iconLabel.TextSize = 18
-        iconLabel.TextXAlignment = Enum.TextXAlignment.Center
-        iconLabel.TextYAlignment = Enum.TextYAlignment.Center
-        iconLabel.TextTransparency = 1
-        iconLabel.Parent = iconFrame
-        
-        -- Icon background circle
+        -- Just a colored circle, no icon
         local iconBg = Instance.new("Frame")
         iconBg.Name = "IconBackground"
         iconBg.Size = UDim2.new(1, 0, 1, 0)
-        iconBg.BackgroundTransparency = 0.8
+        iconBg.BackgroundTransparency = 0.85
         iconBg.BorderSizePixel = 0
         iconBg.Parent = iconFrame
         
@@ -68,28 +57,25 @@ local function createNotificationSystem()
         iconCorner.CornerRadius = UDim.new(0.5, 0)
         iconCorner.Parent = iconBg
         
-        -- Set icon based on status
-        local icons = {
-            success = {icon = "✓", color = Color3.fromRGB(34, 197, 94)},
-            error = {icon = "✕", color = Color3.fromRGB(239, 68, 68)},
-            warning = {icon = "⚠", color = Color3.fromRGB(245, 158, 11)},
-            info = {icon = "ℹ", color = Color3.fromRGB(59, 130, 246)}
+        -- Set color based on status
+        local statusColors = {
+            success = Color3.fromRGB(34, 197, 94),
+            error = Color3.fromRGB(239, 68, 68),
+            warning = Color3.fromRGB(245, 158, 11),
+            info = Color3.fromRGB(59, 130, 246)
         }
         
-        local iconData = icons[status] or icons.info
-        iconLabel.Text = iconData.icon
-        iconLabel.TextColor3 = iconData.color
-        iconBg.BackgroundColor3 = iconData.color
+        iconBg.BackgroundColor3 = statusColors[status] or statusColors.info
         
         return iconFrame
     end
     
-    -- Create circular timer
+    -- Create smooth circular timer with better animation
     local function createCircularTimer(parent, duration, statusColor)
         local timerFrame = Instance.new("Frame")
         timerFrame.Name = "TimerFrame"
-        timerFrame.Size = UDim2.new(0, 20, 0, 20)
-        timerFrame.Position = UDim2.new(1, -48, 0, 12)
+        timerFrame.Size = UDim2.new(0, 28, 0, 28)
+        timerFrame.Position = UDim2.new(1, -40, 0, 8)
         timerFrame.BackgroundTransparency = 1
         timerFrame.Parent = parent
         
@@ -106,13 +92,13 @@ local function createNotificationSystem()
         timerBgCorner.CornerRadius = UDim.new(0.5, 0)
         timerBgCorner.Parent = timerBg
         
-        -- Timer progress circle (using ImageLabel for circular progress)
+        -- Timer progress circle with smooth scaling
         local timerProgress = Instance.new("Frame")
         timerProgress.Name = "TimerProgress"
         timerProgress.Size = UDim2.new(0.8, 0, 0.8, 0)
         timerProgress.Position = UDim2.new(0.1, 0, 0.1, 0)
         timerProgress.BackgroundColor3 = statusColor
-        timerProgress.BackgroundTransparency = 0.3
+        timerProgress.BackgroundTransparency = 0.15
         timerProgress.BorderSizePixel = 0
         timerProgress.Parent = timerFrame
         
@@ -126,11 +112,11 @@ local function createNotificationSystem()
         timerText.Size = UDim2.new(1, 0, 1, 0)
         timerText.BackgroundTransparency = 1
         timerText.Font = Enum.Font.GothamBold
-        timerText.TextSize = 8
+        timerText.TextSize = 11
         timerText.TextColor3 = Color3.fromRGB(248, 250, 252)
         timerText.TextXAlignment = Enum.TextXAlignment.Center
         timerText.TextYAlignment = Enum.TextYAlignment.Center
-        timerText.Text = string.format("%.1f", duration)
+        timerText.Text = tostring(math.ceil(duration))
         timerText.TextTransparency = 1
         timerText.Parent = timerFrame
         
@@ -142,31 +128,41 @@ local function createNotificationSystem()
         local function updateTimer()
             if not timerStarted or not startTime then return end
             
-            local elapsed = tick() - startTime
+            local elapsed = os.clock() - startTime
             local remaining = math.max(0, duration - elapsed)
             local progress = remaining / duration
             
-            -- Update text with proper decimal formatting
-            if remaining > 0 then
-                timerText.Text = string.format("%.1f", remaining)
-            else
-                timerText.Text = "0.0"
-            end
-            
-            -- Update circular progress by scaling
-            timerProgress.Size = UDim2.new(0.8 * progress, 0, 0.8 * progress, 0)
-            timerProgress.Position = UDim2.new(0.1 + (0.8 * (1 - progress)) / 2, 0, 0.1 + (0.8 * (1 - progress)) / 2, 0)
+            -- Update text - show whole seconds
+            timerText.Text = tostring(math.ceil(remaining))
             
             if remaining <= 0 then
+                timerText.Text = "0"
+            end
+            
+            -- Smooth scaling animation with easing
+            local scale = 0.8 * progress
+            local offset = (0.8 - scale) / 2
+            
+            -- Use tweening for smoother circle scaling
+            TweenService:Create(
+                timerProgress,
+                TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {
+                    Size = UDim2.new(scale, 0, scale, 0),
+                    Position = UDim2.new(0.1 + offset, 0, 0.1 + offset, 0)
+                }
+            ):Play()
+            
+            if remaining <= 0 and connection then
                 connection:Disconnect()
             end
         end
         
-        connection = RunService.Heartbeat:Connect(updateTimer)
+        connection = RunService.RenderStepped:Connect(updateTimer)
         
         -- Function to start the timer
         local function startTimer()
-            startTime = tick()
+            startTime = os.clock()
             timerStarted = true
         end
         
@@ -199,7 +195,7 @@ local function createNotificationSystem()
         local notification = Instance.new("Frame")
         notification.Name = tostring(notificationId)
         notification.Size = UDim2.new(1, 0, 0, 0)
-        notification.BackgroundColor3 = Color3.fromRGB(17, 24, 39) -- Dark slate background
+        notification.BackgroundColor3 = Color3.fromRGB(17, 24, 39)
         notification.BorderSizePixel = 0
         notification.BackgroundTransparency = 1
         notification.ClipsDescendants = true
@@ -239,19 +235,7 @@ local function createNotificationSystem()
         uiGradient.Rotation = 45
         uiGradient.Parent = notification
         
-        -- Status accent bar (left side)
-        local statusBar = Instance.new("Frame")
-        statusBar.Name = "StatusBar"
-        statusBar.Size = UDim2.new(0, 4, 1, -16)
-        statusBar.Position = UDim2.new(0, 8, 0, 8)
-        statusBar.BackgroundColor3 = statusColor
-        statusBar.BorderSizePixel = 0
-        statusBar.BackgroundTransparency = 1
-        statusBar.Parent = notification
-        
-        local statusCorner = Instance.new("UICorner")
-        statusCorner.CornerRadius = UDim.new(0, 2)
-        statusCorner.Parent = statusBar
+
         
         -- Create icon
         local iconFrame = createIcon(status, notification)
@@ -262,8 +246,8 @@ local function createNotificationSystem()
         -- Create title with better positioning
         local titleLabel = Instance.new("TextLabel")
         titleLabel.Name = "Title"
-        titleLabel.Size = UDim2.new(1, -120, 0, 24)
-        titleLabel.Position = UDim2.new(0, 60, 0, 16)
+        titleLabel.Size = UDim2.new(1, -130, 0, 24)
+        titleLabel.Position = UDim2.new(0, 58, 0, 14)
         titleLabel.BackgroundTransparency = 1
         titleLabel.Font = Enum.Font.GothamBold
         titleLabel.TextSize = 15
@@ -276,8 +260,8 @@ local function createNotificationSystem()
         -- Create message with better styling
         local messageLabel = Instance.new("TextLabel")
         messageLabel.Name = "Message"
-        messageLabel.Size = UDim2.new(1, -120, 0, 36)
-        messageLabel.Position = UDim2.new(0, 60, 0, 40)
+        messageLabel.Size = UDim2.new(1, -130, 0, 36)
+        messageLabel.Position = UDim2.new(0, 58, 0, 38)
         messageLabel.BackgroundTransparency = 1
         messageLabel.Font = Enum.Font.Gotham
         messageLabel.TextSize = 13
@@ -292,13 +276,13 @@ local function createNotificationSystem()
         -- Enhanced close button
         local closeButton = Instance.new("TextButton")
         closeButton.Name = "CloseButton"
-        closeButton.Size = UDim2.new(0, 20, 0, 20)
-        closeButton.Position = UDim2.new(1, -28, 0, 44)
+        closeButton.Size = UDim2.new(0, 22, 0, 22)
+        closeButton.Position = UDim2.new(1, -32, 0, 42)
         closeButton.BackgroundColor3 = Color3.fromRGB(100, 116, 139)
         closeButton.BackgroundTransparency = 0.9
         closeButton.BorderSizePixel = 0
         closeButton.Font = Enum.Font.GothamBold
-        closeButton.TextSize = 11
+        closeButton.TextSize = 14
         closeButton.TextColor3 = Color3.fromRGB(148, 163, 184)
         closeButton.Text = "×"
         closeButton.TextTransparency = 1
@@ -308,32 +292,7 @@ local function createNotificationSystem()
         closeCorner.CornerRadius = UDim.new(0, 6)
         closeCorner.Parent = closeButton
         
-        -- Animated progress bar
-        local progressContainer = Instance.new("Frame")
-        progressContainer.Name = "ProgressContainer"
-        progressContainer.Size = UDim2.new(1, -16, 0, 3)
-        progressContainer.Position = UDim2.new(0, 8, 1, -8)
-        progressContainer.BackgroundColor3 = Color3.fromRGB(51, 65, 85)
-        progressContainer.BackgroundTransparency = 0.8
-        progressContainer.BorderSizePixel = 0
-        progressContainer.Parent = notification
-        
-        local progressContainerCorner = Instance.new("UICorner")
-        progressContainerCorner.CornerRadius = UDim.new(0, 2)
-        progressContainerCorner.Parent = progressContainer
-        
-        local progressBar = Instance.new("Frame")
-        progressBar.Name = "ProgressBar"
-        progressBar.Size = UDim2.new(1, 0, 1, 0)
-        progressBar.Position = UDim2.new(0, 0, 0, 0)
-        progressBar.BackgroundColor3 = statusColor
-        progressBar.BorderSizePixel = 0
-        progressBar.BackgroundTransparency = 1
-        progressBar.Parent = progressContainer
-        
-        local progressCorner = Instance.new("UICorner")
-        progressCorner.CornerRadius = UDim.new(0, 2)
-        progressCorner.Parent = progressBar
+
         
         -- Animation functions with much faster timing
         local function fadeIn()
@@ -361,12 +320,9 @@ local function createNotificationSystem()
             
             -- Fade in all elements with minimal staggered timing
             local elements = {
-                {statusBar, {BackgroundTransparency = 0.2}, 0.05},
-                {progressBar, {BackgroundTransparency = 0.3}, 0.05},
                 {titleLabel, {TextTransparency = 0}, 0.05},
                 {messageLabel, {TextTransparency = 0}, 0.1},
                 {closeButton, {TextTransparency = 0, BackgroundTransparency = 0.85}, 0.1},
-                {iconFrame:FindFirstChild("IconLabel"), {TextTransparency = 0}, 0.05},
                 {iconFrame:FindFirstChild("IconBackground"), {BackgroundTransparency = 0.85}, 0.05},
                 {timerFrame:FindFirstChild("TimerText"), {TextTransparency = 0}, 0.1}
             }
@@ -446,13 +402,7 @@ local function createNotificationSystem()
             end)
         end
         
-        -- Enhanced progress animation
-        local progressTween = TweenService:Create(
-            progressBar,
-            TweenInfo.new(duration, Enum.EasingStyle.Linear),
-            {Size = UDim2.new(0, 0, 1, 0)}
-        )
-        
+
         -- Close button hover effects
         closeButton.MouseEnter:Connect(function()
             TweenService:Create(closeButton, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {
@@ -473,10 +423,8 @@ local function createNotificationSystem()
         end)
         
         -- Start animations and timer immediately
-        startTimer() -- Start timer immediately when notification is created
+        startTimer()
         fadeIn()
-        task.wait(0.2) -- Much shorter wait
-        progressTween:Play()
         
         -- Auto close
         task.delay(duration, function()
@@ -510,6 +458,8 @@ end
 
 -- Create the notification system
 local Notifications = createNotificationSystem()
+
+-- Rest of your script continues here...
 
 
 if getgenv().UniversalHubRunning then
@@ -681,7 +631,7 @@ local ChatService = game:GetService("Chat")
 
 
 
-Notifications:Info("Universal Hub Lite V1.1 Loaded !", "Goto Our Website For Updates And Other Cool Scripts ! (Copied)", 6)
+Notifications:Info("Universal Hub Lite V1.2 Loaded !", "Goto Our Website For Updates And Other Cool Scripts ! (Copied)", 6)
 setclipboard("https://angxers2.github.io/Unihub/")
 Notifications:Info("Command Bar", "Press T For Command Bar Toggle", 4.5)
 
@@ -1062,9 +1012,9 @@ local function processCommand(msg)
 
         elseif command == "uhub" then
             
-            Notifications:Success("Universal Hub Lite", "Executing Universal Hub V2.0 Please Wait ...", 4.5)
+            Notifications:Success("Universal Hub Lite", "Executing Universal Hub V3 Please Wait ...", 4.5)
             task.wait(4.5)
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V2.0.lua",true))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V3.0.lua",true))()
             
         elseif command == "noclip" then
             setNoClip(true)
@@ -2204,14 +2154,39 @@ commandBarGui.ResetOnSpawn = false
 commandBarGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 commandBarGui.Parent = playerGui
 
+-- Collapsible button (blue circle) - MOVED HIGHER
+local collapseButton = Instance.new("TextButton")
+collapseButton.Name = "CollapseButton"
+collapseButton.Size = UDim2.new(0, 45, 0, 45)
+collapseButton.Position = UDim2.new(1, -60, 0, 5)
+collapseButton.BackgroundColor3 = Color3.fromRGB(59, 130, 246)
+collapseButton.Text = ">"
+collapseButton.Font = Enum.Font.GothamBold
+collapseButton.TextSize = 20
+collapseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+collapseButton.BorderSizePixel = 0
+collapseButton.Visible = true
+collapseButton.Parent = commandBarGui
+
+local collapseCorner = Instance.new("UICorner")
+collapseCorner.CornerRadius = UDim.new(1, 0)
+collapseCorner.Parent = collapseButton
+
+local collapseStroke = Instance.new("UIStroke")
+collapseStroke.Color = Color3.fromRGB(255, 255, 255)
+collapseStroke.Thickness = 2
+collapseStroke.Transparency = 0.7
+collapseStroke.Parent = collapseButton
+
 local commandBarFrame = Instance.new("Frame")
 commandBarFrame.Name = "CommandBarFrame"
-commandBarFrame.Size = UDim2.new(0.4, 0, 0, 40)
-commandBarFrame.Position = UDim2.new(0.3, 0, 0.05, 0)
+commandBarFrame.Size = UDim2.new(0, 0, 0, 45)
+commandBarFrame.Position = UDim2.new(1, -115, 0, 5)
 commandBarFrame.BackgroundColor3 = Color3.fromRGB(30, 41, 59)
-commandBarFrame.BackgroundTransparency = 1 -- Start hidden
+commandBarFrame.BackgroundTransparency = 1
 commandBarFrame.BorderSizePixel = 0
 commandBarFrame.Visible = false
+commandBarFrame.ClipsDescendants = false  -- Make sure this is false so dropdown isn't clipped
 commandBarFrame.Parent = commandBarGui
 
 local barCorner = Instance.new("UICorner")
@@ -2221,7 +2196,7 @@ barCorner.Parent = commandBarFrame
 local barStroke = Instance.new("UIStroke")
 barStroke.Color = Color3.fromRGB(59, 130, 246)
 barStroke.Thickness = 1.5
-barStroke.Transparency = 1 -- Start hidden
+barStroke.Transparency = 1
 barStroke.Parent = commandBarFrame
 
 local commandTextBox = Instance.new("TextBox")
@@ -2232,23 +2207,25 @@ commandTextBox.BackgroundTransparency = 1
 commandTextBox.Text = ""
 commandTextBox.PlaceholderText = "Type a command... (Enter to autocomplete, Enter again to execute)"
 commandTextBox.Font = Enum.Font.GothamSemibold
-commandTextBox.TextSize = 18
+commandTextBox.TextSize = 16
 commandTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 commandTextBox.PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
 commandTextBox.TextXAlignment = Enum.TextXAlignment.Left
 commandTextBox.ClearTextOnFocus = false
-commandTextBox.TextTransparency = 1 -- Start hidden
+commandTextBox.TextTransparency = 1
 commandTextBox.Parent = commandBarFrame
 
 -- Autocomplete dropdown container
 local autocompleteFrame = Instance.new("Frame")
 autocompleteFrame.Name = "AutocompleteFrame"
-autocompleteFrame.Size = UDim2.new(1, 0, 0, 0) -- Start with 0 height
-autocompleteFrame.Position = UDim2.new(0, 0, 1, 2)
+autocompleteFrame.Size = UDim2.new(1, 0, 0, 0)
+autocompleteFrame.Position = UDim2.new(0, 0, 1, 8)  -- Increased spacing from 5 to 8
 autocompleteFrame.BackgroundColor3 = Color3.fromRGB(25, 35, 50)
 autocompleteFrame.BackgroundTransparency = 0.05
-autocompleteFrameBorderSizePixel = 0
+autocompleteFrame.BorderSizePixel = 0
 autocompleteFrame.Visible = false
+autocompleteFrame.ClipsDescendants = false  -- Make sure dropdown content isn't clipped
+autocompleteFrame.ZIndex = 10  -- Higher Z-index to appear on top
 autocompleteFrame.Parent = commandBarFrame
 
 local autocompleteCorner = Instance.new("UICorner")
@@ -2259,6 +2236,7 @@ local autocompleteStroke = Instance.new("UIStroke")
 autocompleteStroke.Color = Color3.fromRGB(59, 130, 246)
 autocompleteStroke.Thickness = 1
 autocompleteStroke.Transparency = 0.7
+autocompleteStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border  -- Stroke on border only
 autocompleteStroke.Parent = autocompleteFrame
 
 -- Scrolling frame for suggestions
@@ -2270,7 +2248,9 @@ suggestionScrollFrame.BackgroundTransparency = 1
 suggestionScrollFrame.BorderSizePixel = 0
 suggestionScrollFrame.ScrollBarThickness = 4
 suggestionScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(59, 130, 246)
+suggestionScrollFrame.ScrollBarImageTransparency = 0.5
 suggestionScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+suggestionScrollFrame.ClipsDescendants = true  -- Only clip inside the scroll frame
 suggestionScrollFrame.Parent = autocompleteFrame
 
 local suggestionLayout = Instance.new("UIListLayout")
@@ -2280,8 +2260,60 @@ suggestionLayout.Parent = suggestionScrollFrame
 
 -- List of all commands and aliases for autocomplete
 local commandList = {
-    "fly", "unfly", "fov", "rj", "rejoin", "uhub", "noclip", "clip", "walkspeed", "ws", "jump", "view", "unview", "infjump", "goto", "tp", "to", "bypassvc", "bvc", "rvc", "infyield", "ify", "savepos", "topos", "clicktp", "spin", "unspin", "bang", "unbang", "settime", "tod", "exbp", "extendbaseplate", "prefix", "pfx", "fpsboost", "uesp", "emotes", "sbroken", "shop", "serverhop", "antiafk", "antidle", "copyuser", "copydisplay", "copyuserid", "copyid", "orbit", "unorbit", "showimg", "headless", "unheadless", "noheadless", "copyinv", "copyweblink", "copywebsitelink", "showstats", "stats", "cmds", "commands"
+    "fly", "unfly", "fov", "rj", "rejoin", "uhub", "noclip", "clip", "walkspeed", "ws", "jump", "view", "unview", "infjump", "goto", "tp", "to", "bypassvc", "bvc", "rvc", "infyield", "ify", "savepos", "topos", "clicktp", "spin", "unspin", "bang", "unbang", "settime", "tod", "exbp", "extendbaseplate", "prefix", "pfx", "fpsboost", "uesp", "emotes", "sbroken", "shop", "serverhop", "antiafk", "antidle", "copyuser", "copydisplay", "copyuserid", "copyid", "orbit", "unorbit", "showimg", "headless", "unheadless", "noheadless", "copyinv", "copyweblink", "copywebsitelink", "showstats", "stats", "cmds", "commands", "cmdbarkeybind", "barkeybind", "cmdbarbind", "barbind"
 }
+
+-- Commands that require player arguments
+local playerCommands = {
+    "goto", "tp", "to", "view", "bang", "orbit", "showimg", "copyuser", "copydisplay", "copyuserid", "copyid"
+}
+
+-- Helper function to check if command needs player argument
+local function commandNeedsPlayer(cmd)
+    for _, playerCmd in ipairs(playerCommands) do
+        if cmd == playerCmd then
+            return true
+        end
+    end
+    return false
+end
+
+-- Helper function to find matching players
+local function getMatchingPlayers(nameSegment)
+    if not nameSegment or nameSegment == "" then return {} end
+    nameSegment = nameSegment:lower()
+    
+    local matches = {}
+    local addedPlayers = {}
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        local userName = player.Name:lower()
+        local displayName = player.DisplayName:lower()
+        
+        if displayName:sub(1, #nameSegment) == nameSegment then
+            if not addedPlayers[player.Name] then
+                table.insert(matches, {
+                    name = player.Name,
+                    display = player.DisplayName,
+                    matchType = "display",
+                    matchedOn = player.DisplayName
+                })
+                addedPlayers[player.Name] = true
+            end
+        elseif userName:sub(1, #nameSegment) == nameSegment then
+            if not addedPlayers[player.Name] then
+                table.insert(matches, {
+                    name = player.Name,
+                    display = player.DisplayName,
+                    matchType = "username",
+                    matchedOn = player.Name
+                })
+                addedPlayers[player.Name] = true
+            end
+        end
+    end
+    return matches
+end
 
 -- Autocomplete logic
 local autocompleteMatches = {}
@@ -2290,6 +2322,7 @@ local suggestionButtons = {}
 
 -- Track command bar visibility
 local barVisible = false
+local barExpanded = false
 
 -- Tween info for fade animations
 local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -2302,32 +2335,122 @@ local function clearSuggestions()
     autocompleteFrame.Visible = false
 end
 
-local function createSuggestionButton(command, index)
+local function createSuggestionButton(command, index, isPlayerSuggestion, playerData)
     local button = Instance.new("TextButton")
     button.Name = "SuggestionButton" .. index
-    button.Size = UDim2.new(1, 0, 0, 30)
+    button.Size = UDim2.new(1, 0, 0, isPlayerSuggestion and 56 or 30)  -- Increased from 50 to 56
     button.BackgroundColor3 = Color3.fromRGB(35, 45, 65)
     button.BackgroundTransparency = 1
     button.BorderSizePixel = 0
-    button.Text = command
+    button.Text = ""
     button.Font = Enum.Font.GothamBold
     button.TextSize = 16
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.TextXAlignment = Enum.TextXAlignment.Left
     button.LayoutOrder = index
     
-    -- FIXED: Use PaddingLeft instead of Left
     local buttonPadding = Instance.new("UIPadding")
     buttonPadding.PaddingLeft = UDim.new(0, 15)
-    buttonPadding.PaddingTop = UDim.new(0, 5)
-    buttonPadding.PaddingBottom = UDim.new(0, 5)
+    buttonPadding.PaddingTop = UDim.new(0, 8)  -- Increased from 5 to 8
+    buttonPadding.PaddingBottom = UDim.new(0, 8)  -- Increased from 5 to 8
     buttonPadding.Parent = button
     
     local buttonCorner = Instance.new("UICorner")
     buttonCorner.CornerRadius = UDim.new(0, 6)
     buttonCorner.Parent = button
     
-    -- Hover effects
+    if isPlayerSuggestion and playerData then
+        local cmdParts = {}
+        for part in command:gmatch("%S+") do
+            table.insert(cmdParts, part)
+        end
+        local commandName = cmdParts[1] or ""
+        
+        -- Get the actual player object to retrieve UserId
+        local targetPlayer = nil
+        for _, player in pairs(Players:GetPlayers()) do
+            if player.Name == playerData.name then
+                targetPlayer = player
+                break
+            end
+        end
+        
+        -- Create circular player avatar
+        if targetPlayer then
+            local avatarFrame = Instance.new("Frame")
+            avatarFrame.Name = "AvatarFrame"
+            avatarFrame.Size = UDim2.new(0, 40, 0, 40)  -- Increased from 38 to 40
+            avatarFrame.Position = UDim2.new(0, 0, 0, 0)  -- Adjusted position
+            avatarFrame.BackgroundTransparency = 1
+            avatarFrame.Parent = button
+            
+            local avatarImage = Instance.new("ImageLabel")
+            avatarImage.Name = "AvatarImage"
+            avatarImage.Size = UDim2.new(1, 0, 1, 0)
+            avatarImage.BackgroundColor3 = Color3.fromRGB(45, 55, 75)
+            avatarImage.BorderSizePixel = 0
+            avatarImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. targetPlayer.UserId .. "&width=48&height=48&format=png"
+            avatarImage.Parent = avatarFrame
+            
+            local avatarCorner = Instance.new("UICorner")
+            avatarCorner.CornerRadius = UDim.new(1, 0)
+            avatarCorner.Parent = avatarImage
+            
+            local avatarStroke = Instance.new("UIStroke")
+            avatarStroke.Color = Color3.fromRGB(59, 130, 246)
+            avatarStroke.Thickness = 1.5
+            avatarStroke.Transparency = 0.5
+            avatarStroke.Parent = avatarImage
+        end
+        
+        local mainText = Instance.new("TextLabel")
+        mainText.Name = "MainText"
+        mainText.Size = UDim2.new(1, -55, 0, 18)
+        mainText.Position = UDim2.new(0, 48, 0, 3)  -- Adjusted position
+        mainText.BackgroundTransparency = 1
+        
+        if playerData.matchType == "display" then
+            mainText.Text = commandName .. " " .. playerData.display
+        else
+            mainText.Text = commandName .. " " .. playerData.name
+        end
+        
+        mainText.Font = Enum.Font.GothamBold
+        mainText.TextSize = 15
+        mainText.TextColor3 = Color3.fromRGB(255, 255, 255)
+        mainText.TextXAlignment = Enum.TextXAlignment.Left
+        mainText.Parent = button
+        
+        local subText = Instance.new("TextLabel")
+        subText.Name = "SubText"
+        subText.Size = UDim2.new(1, -55, 0, 14)
+        subText.Position = UDim2.new(0, 48, 0, 22)  -- Adjusted position
+        subText.BackgroundTransparency = 1
+        
+        if playerData.matchType == "display" then
+            subText.Text = "Username: @" .. playerData.name
+        else
+            subText.Text = "Display: " .. playerData.display
+        end
+        
+        subText.Font = Enum.Font.Gotham
+        subText.TextSize = 12
+        subText.TextColor3 = Color3.fromRGB(148, 163, 184)
+        subText.TextXAlignment = Enum.TextXAlignment.Left
+        subText.Parent = button
+    else
+        local textLabel = Instance.new("TextLabel")
+        textLabel.Name = "TextLabel"
+        textLabel.Size = UDim2.new(1, -15, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.Text = command
+        textLabel.Font = Enum.Font.GothamBold
+        textLabel.TextSize = 16
+        textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        textLabel.TextXAlignment = Enum.TextXAlignment.Left
+        textLabel.Parent = button
+    end
+    
     button.MouseEnter:Connect(function()
         selectedIndex = index
         updateSelectedSuggestion()
@@ -2340,121 +2463,160 @@ local function createSuggestionButton(command, index)
         end
     end)
     
-    -- Click to select
     button.MouseButton1Click:Connect(function()
-        selectSuggestion(command)
+        if isPlayerSuggestion and playerData then
+            local cmdParts = {}
+            for part in command:gmatch("%S+") do
+                table.insert(cmdParts, part)
+            end
+            local commandName = cmdParts[1] or ""
+            selectSuggestion(commandName .. " " .. playerData.name)
+        else
+            selectSuggestion(command)
+        end
     end)
     
     button.Parent = suggestionScrollFrame
     return button
 end
 
-local function updateSelectedSuggestion()
+function updateSelectedSuggestion()
     for i, button in pairs(suggestionButtons) do
         if i == selectedIndex then
             TweenService:Create(button, TweenInfo.new(0.1), {
-                BackgroundTransparency = 0.7,
-                TextColor3 = Color3.fromRGB(59, 130, 246)
+                BackgroundTransparency = 0.7
             }):Play()
+            
+            -- Update text color for main text label
+            local mainText = button:FindFirstChild("MainText")
+            local textLabel = button:FindFirstChild("TextLabel")
+            if mainText then
+                TweenService:Create(mainText, TweenInfo.new(0.1), {
+                    TextColor3 = Color3.fromRGB(59, 130, 246)
+                }):Play()
+            elseif textLabel then
+                TweenService:Create(textLabel, TweenInfo.new(0.1), {
+                    TextColor3 = Color3.fromRGB(59, 130, 246)
+                }):Play()
+            end
         else
             TweenService:Create(button, TweenInfo.new(0.1), {
-                BackgroundTransparency = 1,
-                TextColor3 = Color3.fromRGB(255, 255, 255)
+                BackgroundTransparency = 1
             }):Play()
+            
+            local mainText = button:FindFirstChild("MainText")
+            local textLabel = button:FindFirstChild("TextLabel")
+            if mainText then
+                TweenService:Create(mainText, TweenInfo.new(0.1), {
+                    TextColor3 = Color3.fromRGB(255, 255, 255)
+                }):Play()
+            elseif textLabel then
+                TweenService:Create(textLabel, TweenInfo.new(0.1), {
+                    TextColor3 = Color3.fromRGB(255, 255, 255)
+                }):Play()
+            end
         end
     end
 end
 
-function selectSuggestion(command)
-    local text = commandTextBox.Text
-    local args = text:match("^%S*(.*)") or ""
-    commandTextBox.Text = command .. args
-    commandTextBox.CursorPosition = #command + 1
+function selectSuggestion(suggestion)
+    commandTextBox.Text = suggestion
+    commandTextBox.CursorPosition = #suggestion + 1
     clearSuggestions()
 end
 
 local function updateAutocomplete()
     local text = commandTextBox.Text
-    print("Updating autocomplete for text: '" .. text .. "'") -- Debug print
     
-    -- Extract just the first word (command)
-    local commandWord = text:match("^(%S*)") or ""
-    print("Command word extracted: '" .. commandWord .. "'") -- Debug print
+    local words = {}
+    for word in text:gmatch("%S+") do
+        table.insert(words, word)
+    end
     
-    if commandWord == "" or #commandWord < 1 then
-        print("Command word is empty, clearing suggestions") -- Debug print
+    if #words == 0 then
         clearSuggestions()
         autocompleteMatches = {}
         selectedIndex = 1
         return
     end
     
-    -- Find all matches (case insensitive)
+    local commandWord = words[1]:lower()
     local matches = {}
-    local lowerCommandWord = commandWord:lower()
-    print("Looking for matches with: '" .. lowerCommandWord .. "'") -- Debug print
+    local playerDataList = {}
+    local isPlayerSearch = false
     
-    for _, cmd in ipairs(commandList) do
-        local cmdLower = cmd:lower()
-        if cmdLower:sub(1, #lowerCommandWord) == lowerCommandWord then
-            table.insert(matches, cmd)
-            print("Found match: " .. cmd) -- Debug print
+    if #words == 1 then
+        for _, cmd in ipairs(commandList) do
+            local cmdLower = cmd:lower()
+            if cmdLower:sub(1, #commandWord) == commandWord then
+                table.insert(matches, cmd)
+                table.insert(playerDataList, nil)
+            end
+        end
+    elseif #words >= 2 then
+        if commandNeedsPlayer(commandWord) then
+            isPlayerSearch = true
+            local playerArg = words[2]
+            local playerMatches = getMatchingPlayers(playerArg)
+            
+            for _, playerData in ipairs(playerMatches) do
+                table.insert(matches, commandWord .. " " .. playerData.name)
+                table.insert(playerDataList, playerData)
+            end
         end
     end
     
     autocompleteMatches = matches
     selectedIndex = 1
     
-    print("Total matches found: " .. #matches) -- Debug print
-    
     if #matches > 0 then
         clearSuggestions()
         
-        -- Limit to max 6 suggestions for better UX
-        local maxSuggestions = math.min(#matches, 6)
-        print("Creating " .. maxSuggestions .. " suggestion buttons") -- Debug print
+        local totalSuggestions = math.min(#matches, 5)  -- Limit to max 5 suggestions visible at once
         
-        for i = 1, maxSuggestions do
-            local button = createSuggestionButton(matches[i], i)
+        for i = 1, #matches do  -- Create all buttons
+            local button = createSuggestionButton(matches[i], i, isPlayerSearch, playerDataList[i])
             table.insert(suggestionButtons, button)
         end
         
-        -- Update dropdown size
-        local dropdownHeight = maxSuggestions * 32
-        autocompleteFrame.Size = UDim2.new(1, 0, 0, dropdownHeight)
-        suggestionScrollFrame.CanvasSize = UDim2.new(0, 0, 0, maxSuggestions * 32)
+        local itemHeight = isPlayerSearch and 56 or 32  -- Updated from 52 to 56
+        local maxVisibleHeight = totalSuggestions * itemHeight  -- Height for 5 items max
+        local totalCanvasHeight = #matches * itemHeight  -- Total height for all items
+        
+        autocompleteFrame.Size = UDim2.new(1, 0, 0, maxVisibleHeight)
+        suggestionScrollFrame.CanvasSize = UDim2.new(0, 0, 0, totalCanvasHeight)
         
         autocompleteFrame.Visible = true
         updateSelectedSuggestion()
         
-        -- Fade in effect
         autocompleteFrame.BackgroundTransparency = 1
         TweenService:Create(autocompleteFrame, TweenInfo.new(0.2), {BackgroundTransparency = 0.05}):Play()
-        
-        print("Autocomplete dropdown should now be visible") -- Debug print
     else
-        print("No matches found, clearing suggestions") -- Debug print
         clearSuggestions()
     end
 end
 
 local function fadeIn()
     commandBarFrame.Visible = true
+    barExpanded = true
     
-    -- Fade in the frame background
+    collapseButton.Text = "×"
+    TweenService:Create(collapseButton, tweenInfo, {
+        BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    }):Play()
+    
     local frameTween = TweenService:Create(commandBarFrame, tweenInfo, {
-        BackgroundTransparency = 0.15
+        BackgroundTransparency = 0.15,
+        Size = UDim2.new(0, 500, 0, 45),
+        Position = UDim2.new(1, -565, 0, 5)
     })
     
-    -- Fade in the stroke
     local strokeTween = TweenService:Create(barStroke, tweenInfo, {
         Transparency = 0.5
     })
     
-    -- Fade in the text
     local textTween = TweenService:Create(commandTextBox, tweenInfo, {
-        TextTransparency = 0,
-        PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
+        TextTransparency = 0
     })
     
     frameTween:Play()
@@ -2463,23 +2625,20 @@ local function fadeIn()
 end
 
 local function fadeOut()
-    -- Fade out the frame background
     local frameTween = TweenService:Create(commandBarFrame, tweenInfo, {
-        BackgroundTransparency = 1
+        BackgroundTransparency = 1,
+        Size = UDim2.new(0, 0, 0, 45),
+        Position = UDim2.new(1, -115, 0, 5)
     })
     
-    -- Fade out the stroke
     local strokeTween = TweenService:Create(barStroke, tweenInfo, {
         Transparency = 1
     })
     
-    -- Fade out the text
     local textTween = TweenService:Create(commandTextBox, tweenInfo, {
-        TextTransparency = 1,
-        PlaceholderColor3 = Color3.fromRGB(148, 163, 184)
+        TextTransparency = 1
     })
     
-    -- Fade out suggestion
     if autocompleteFrame.Visible then
         TweenService:Create(autocompleteFrame, tweenInfo, {
             BackgroundTransparency = 1
@@ -2490,7 +2649,12 @@ local function fadeOut()
     strokeTween:Play()
     textTween:Play()
     
-    -- Hide the frame after animation completes
+    TweenService:Create(collapseButton, tweenInfo, {
+        BackgroundColor3 = Color3.fromRGB(59, 130, 246)
+    }):Play()
+    collapseButton.Text = ">"
+    barExpanded = false
+    
     frameTween.Completed:Connect(function()
         if not barVisible then
             commandBarFrame.Visible = false
@@ -2499,9 +2663,38 @@ local function fadeOut()
     end)
 end
 
--- Handle T key press to toggle command bar
+-- Handle collapse button click
+collapseButton.MouseButton1Click:Connect(function()
+    if barExpanded then
+        commandTextBox:ReleaseFocus()
+        commandTextBox.Text = ""
+        clearSuggestions()
+        fadeOut()
+        barVisible = false
+    else
+        barVisible = true
+        fadeIn()
+        wait(0.1)
+        commandTextBox:CaptureFocus()
+        updateAutocomplete()
+    end
+end)
+
+-- Collapse button hover effects
+collapseButton.MouseEnter:Connect(function()
+    TweenService:Create(collapseButton, TweenInfo.new(0.2), {
+        Size = UDim2.new(0, 50, 0, 50)
+    }):Play()
+end)
+
+collapseButton.MouseLeave:Connect(function()
+    TweenService:Create(collapseButton, TweenInfo.new(0.2), {
+        Size = UDim2.new(0, 45, 0, 45)
+    }):Play()
+end)
+
+-- Handle keybind to toggle command bar
 UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    -- Ignore input if it's already being processed by Roblox (e.g., typing in a chat box)
     if gameProcessedEvent then return end
 
     if input.KeyCode == _G.CmdBarKeybind then
@@ -2509,13 +2702,13 @@ UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
         
         if barVisible then
             fadeIn()
-            wait(0.1) -- Small delay to ensure animation starts
-            commandTextBox:CaptureFocus() -- Automatically focus the textbox when it appears
-            updateAutocomplete() -- Update autocomplete in case there's existing text
+            wait(0.1)
+            commandTextBox:CaptureFocus()
+            updateAutocomplete()
         else
-            commandTextBox:ReleaseFocus() -- Release focus when hidden
-            commandTextBox.Text = "" -- Clear text when hidden
-            clearSuggestions() -- Hide suggestions when hidden
+            commandTextBox:ReleaseFocus()
+            commandTextBox.Text = ""
+            clearSuggestions()
             fadeOut()
         end
     end
@@ -2523,31 +2716,30 @@ end)
 
 -- Connect autocomplete update to text changes
 commandTextBox:GetPropertyChangedSignal("Text"):Connect(function()
-    print("Text changed to: '" .. commandTextBox.Text .. "'") -- Debug print
     updateAutocomplete()
 end)
 
--- Track if we're autocompleting to prevent premature closing
+-- Track if we're autocompleting
 local isAutocompleting = false
+local justAutoCompleted = false
 
--- Handle other navigation keys when textbox is focused
+-- Handle navigation and enter keys
 commandTextBox.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.Return or input.KeyCode == Enum.KeyCode.KeypadEnter then
-        -- Use Enter to accept first suggestion if available, otherwise submit command
-        if #autocompleteMatches > 0 and commandTextBox.Text ~= "" then
-            local firstWord = commandTextBox.Text:match("^(%S*)") or ""
-            if firstWord ~= autocompleteMatches[1] then -- Only autocomplete if it's not already complete
-                isAutocompleting = true
-                selectSuggestion(autocompleteMatches[selectedIndex])
-                -- Refocus the textbox after autocomplete
-                task.wait(0.05)
-                commandTextBox:CaptureFocus()
-                isAutocompleting = false
-                return -- Don't submit the command yet
-            end
+        if #autocompleteMatches > 0 and not justAutoCompleted then
+            -- First enter - autocomplete
+            isAutocompleting = true
+            selectSuggestion(autocompleteMatches[selectedIndex])
+            justAutoCompleted = true
+            task.wait(0.05)
+            commandTextBox:CaptureFocus()
+            isAutocompleting = false
+        else
+            -- Second enter or no matches - execute
+            justAutoCompleted = false
+            commandTextBox:ReleaseFocus()
         end
     elseif input.KeyCode == Enum.KeyCode.Down then
-        -- Navigate down in suggestions
         if #autocompleteMatches > 0 then
             selectedIndex = selectedIndex + 1
             if selectedIndex > #autocompleteMatches then
@@ -2556,7 +2748,6 @@ commandTextBox.InputBegan:Connect(function(input)
             updateSelectedSuggestion()
         end
     elseif input.KeyCode == Enum.KeyCode.Up then
-        -- Navigate up in suggestions
         if #autocompleteMatches > 0 then
             selectedIndex = selectedIndex - 1
             if selectedIndex < 1 then
@@ -2565,38 +2756,36 @@ commandTextBox.InputBegan:Connect(function(input)
             updateSelectedSuggestion()
         end
     elseif input.KeyCode == Enum.KeyCode.Escape then
-        -- Close suggestions
         clearSuggestions()
-    end
-end)
-
--- Hide suggestion on focus lost or command submit
-commandTextBox.FocusLost:Connect(function(enterPressed)
-    -- Don't close if we're in the middle of autocompleting
-    if isAutocompleting then
-        return
-    end
-    
-    -- Small delay to allow clicks on suggestions
-    task.wait(0.1)
-    clearSuggestions()
-    
-    if enterPressed and commandTextBox.Text ~= "" then
-        local command = commandTextBox.Text:gsub("^%s+", ""):gsub("%s+$", "") -- Trim whitespace
-        
-        -- Add prefix and process the command
-        local fullCommand = prefix .. command
-        
-        -- Process the command using your existing processCommand function
-        processCommand(fullCommand)
-        
         commandTextBox.Text = ""
         barVisible = false
         fadeOut()
     end
 end)
 
--- Main command processing function (chat) - your existing chat handler
-LocalPlayer.Chatted:Connect(function(msg)
-    processCommand(msg)
+-- Reset autocomplete flag when text changes
+commandTextBox:GetPropertyChangedSignal("Text"):Connect(function()
+    justAutoCompleted = false
+end)
+
+-- Handle command execution on focus lost
+commandTextBox.FocusLost:Connect(function(enterPressed)
+    if isAutocompleting then
+        isAutocompleting = false
+        return
+    end
+    
+    task.wait(0.1)
+    clearSuggestions()
+    
+    if enterPressed and commandTextBox.Text ~= "" then
+        local command = commandTextBox.Text:gsub("^%s+", ""):gsub("%s+$", "")
+        local fullCommand = prefix .. command
+        
+        processCommand(fullCommand)
+        
+        commandTextBox.Text = ""
+        barVisible = false
+        fadeOut()
+    end
 end)
