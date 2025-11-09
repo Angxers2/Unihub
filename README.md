@@ -117,7 +117,11 @@ Small Update
 - New Logos
 - Labels Now Use Lucide Icons
 - Welcome Tab Has Massively Updated
-- Optimizations 
+- Optimizations
+
+**V3.0** **1**
+- Updated Stats To Execute With Script Execution & Added More Information
+- Added Weather Label To Welcome Tab 
 
 ## Bugs
 - Jump Power Does Not Work On Respawn (Re-Execute Script In Misc Tab)
