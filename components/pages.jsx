@@ -103,7 +103,7 @@ function GamesPage() {
               <div className="col-span-3 text-[12px]" style={{ color: "var(--fg-dim)", fontFamily: "var(--font-mono)" }}>{g.cat}</div>
               <div className="col-span-2">{statusPill(g.s)}</div>
               <div className="col-span-1 text-right opacity-40 group-hover:opacity-100 transition">
-                <button className="w-7 h-7 rounded-md inline-flex items-center justify-center" style={{ border: "1px solid rgba(255,255,255,0.06)" }}><Icon.External width="12" height="12"/></button>
+                <a href={`https://www.roblox.com/games/${g.id}`} target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-md inline-flex items-center justify-center" style={{ border: "1px solid rgba(255,255,255,0.06)", color: "var(--fg-dim)" }}><Icon.External width="12" height="12"/></a>
               </div>
             </div>
           ))}

@@ -87,7 +87,7 @@ function ScriptCard({ title, version, script, hue, accentLabel, lastUpdated }) {
           <Pill variant="solid" hue={hue} size="md" onClick={copy} icon={copied ? <Icon.Check width="14" height="14"/> : <Icon.Copy width="14" height="14"/>}>
             {copied ? "Copied" : "Copy Script"}
           </Pill>
-          <Pill variant="glass" size="md" icon={<Icon.Code width="14" height="14"/>}>View Source</Pill>
+          <Pill variant="glass" size="md" icon={<Icon.Code width="14" height="14"/>} iconRight={<Icon.External width="12" height="12"/>} onClick={() => script && window.open(script, "_blank", "noopener,noreferrer")}>View Source</Pill>
           <div className="ml-auto text-[11px]" style={{ color: "var(--fg-dim)", fontFamily: "var(--font-mono)" }}>~{script.length} chars</div>
         </div>
       </div>
