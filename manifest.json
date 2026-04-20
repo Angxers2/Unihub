@@ -1,12 +1,12 @@
 {
   "main": {
     "version": "3.0",
-    "file": "Unihub V3.0.lua",
-    "branch": "main"
+    "script": "https://raw.githubusercontent.com/Angxers2/Unihub/main/Unihub%20V3.0.lua",
+    "updated": "Jan 16 2026"
   },
   "lite": {
     "version": "1.2",
-    "file": "Unihub Lite V1.2",
-    "branch": "lite"
+    "script": "https://raw.githubusercontent.com/Angxers2/Unihub/lite/Unihub%20Lite%20V1.2",
+    "updated": "Nov 8 2025"
   }
 }
