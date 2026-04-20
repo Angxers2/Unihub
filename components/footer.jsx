@@ -49,7 +49,6 @@ function Footer({ onNavigate }) {
           </div>
           <div className="flex flex-wrap justify-center gap-2 mt-5">
             <Pill variant="ghost" size="sm">Status</Pill>
-            <Pill variant="ghost" size="sm" onClick={() => onNavigate("changelog")}>Changelog</Pill>
           </div>
         </div>
 

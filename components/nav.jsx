@@ -7,6 +7,7 @@ function Nav({ page, setPage }) {
     { id: "showcase", label: "Showcase" },
     { id: "games", label: "Supported Games" },
     { id: "legacy", label: "Legacy Versions" },
+    { id: "changelog", label: "Changelog" },
     { id: "support", label: "Support" },
   ];
   const h = window.TWEAKS.accentHue;
