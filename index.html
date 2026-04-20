@@ -1,17 +1,126 @@
-<!doctype html>
-<html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="Logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Universal Hub</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/Unihub/assets/index-Dr0wX3O9.js"></script>
-    <link rel="stylesheet" crossorigin href="/Unihub/assets/index-DXfQN11h.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Universal Hub</title>
+<link rel="icon" type="image/png" href="favicon.png"/>
+<link rel="apple-touch-icon" href="favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Serif+Display:ital@0;1&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Plus+Jakarta+Sans:wght@300..800&family=Inter:wght@300..700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --bg: oklch(14% 0.005 280);
+    --bg-elev: oklch(17% 0.006 280);
+    --fg: oklch(96% 0.008 80);
+    --fg-dim: oklch(62% 0.01 280);
+    --font-display: 'Instrument Serif', serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  html, body { background: var(--bg); color: var(--fg); }
+  body { font-family: var(--font-body); margin: 0; }
+
+  #scroll-root {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
+
+  ::selection { background: oklch(70% 0.18 var(--accent-h, 295) / 0.35); color: var(--fg); }
+
+  /* grain */
+  #grain-layer {
+    position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='256' height='256' filter='url(%23n)' opacity='0.3'/></svg>");
+  }
+
+  @keyframes footer-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(calc(-100% / 3)); }
+  }
+  .animate-footer-marquee { animation: footer-marquee 30s linear infinite; }
+
+  @keyframes footer-heart {
+    0%, 100% { transform: scale(1); }
+    15%, 45% { transform: scale(1.25); }
+    30% { transform: scale(1); }
+  }
+  .animate-footer-heart { animation: footer-heart 1.6s ease-in-out infinite; display: inline-block; }
+
+  input:focus, textarea:focus {
+    border-color: oklch(70% 0.18 var(--accent-h, 295) / 0.5) !important;
+    box-shadow: 0 0 0 3px oklch(70% 0.18 var(--accent-h, 295) / 0.15);
+  }
+
+  button, a { -webkit-tap-highlight-color: transparent; }
+
+  /* Quiet, square-ish buttons */
+  .pill {
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    font-weight: 500;
+  }
+  .pill:active { transform: translateY(0.5px); }
+
+  .pill-glass {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.08);
+    color: var(--fg);
+  }
+  .pill-glass:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.14);
+  }
+
+  .pill-solid {
+    background: var(--fg);
+    border-color: var(--fg);
+    color: oklch(16% 0.005 280);
+  }
+  .pill-solid:hover {
+    background: #fff;
+  }
+
+  .pill-ghost {
+    background: transparent;
+    border-color: rgba(255,255,255,0.06);
+    color: var(--fg-dim);
+  }
+  .pill-ghost:hover {
+    color: var(--fg);
+    border-color: rgba(255,255,255,0.12);
+  }
+</style>
+</head>
+<body>
+<div id="grain-layer"></div>
+<div id="scroll-root">
+  <div id="root"></div>
+</div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="components/theme.jsx"></script>
+<script type="text/babel" src="components/nav.jsx"></script>
+<script type="text/babel" src="components/home.jsx"></script>
+<script type="text/babel" src="components/pages.jsx"></script>
+<script type="text/babel" src="components/changelog.jsx"></script>
+<script type="text/babel" src="components/footer.jsx"></script>
+<script type="text/babel" src="components/app.jsx"></script>
+</body>
 </html>
