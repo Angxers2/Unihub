@@ -51,7 +51,7 @@ function Nav({ page, setPage }) {
       <div className="absolute inset-0 backdrop-blur-xl" style={{ background: "linear-gradient(180deg, rgba(10,10,11,0.85) 0%, rgba(10,10,11,0.5) 100%)", borderBottom: "1px solid rgba(255,255,255,0.05)" }} />
       <div className="relative max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <button onClick={() => setPage("home")} className="flex items-center group">
-          <img src="favicon.png" alt="Universal Hub" className="w-12 h-12 object-contain"/>
+          <img src="nav-logo.png" alt="Universal Hub" className="w-12 h-12 object-contain"/>
         </button>
         <div className="hidden md:flex items-center gap-1 p-1 rounded-full" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
           {tabs.map((t) => (
